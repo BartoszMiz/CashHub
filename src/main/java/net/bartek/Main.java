@@ -33,6 +33,7 @@ public class Main {
 				var buffer = new byte[256];
 				while (in.available() > 0) {
 					var readBytes = in.read(buffer);
+
 					for (int i = 0; i < readBytes; i++) {
 						requestBytes.add(buffer[i]);
 					}
@@ -45,26 +46,39 @@ public class Main {
 				}
 
 				var request = new String(byteArray);
-				logger.LogDebug('\n' + request);
+//				logger.LogDebug('\n' + request);
 
-				HttpVerb requestMethod = null;
+				HttpVerb requestVerb = null;
 				for (var verb : HttpVerb.values()) {
 					if (request.startsWith(verb.toString()))
-						requestMethod = verb;
+						requestVerb = verb;
 				}
 
-				var routeAndParams = request.split("\n")[0].split(" ")[1];
+				var requestLines = request.split("\n");
+				var routeAndParams = requestLines[0].split(" ")[1];
 				var route = routeAndParams.split("\\?")[0];
 
-				HashMap<String, String> parameters = null;
+				HttpParameters parameters = null;
 				if (routeAndParams.contains("?")) {
 					var paramString = routeAndParams.split("\\?")[1];
 					parameters = parseParameters(paramString);
 				}
 
-				// TODO: Add parsing for HTTP headers such as Host, User-Agent, etc.
+				var headers = new HttpHeaders(new HashMap<>());
 
-				logger.LogDebug(String.format("Method: %s Route: %s Params: %s", requestMethod != null ? requestMethod.toString() : "unknown", route, parameters));
+				for (var i = 1; i < requestLines.length; i++) {
+					var line = requestLines[i].strip();
+					var headerAndValue = line.split(": ");
+
+					if (headerAndValue.length != 2) {
+						continue;
+					}
+
+					headers.value().put(headerAndValue[0], headerAndValue[1]);
+				}
+
+				var httpRequest = new HttpRequest(requestVerb, route, parameters, headers);
+				logger.LogDebug(httpRequest.toString());
 
 				connection.close();
 			}
@@ -75,12 +89,12 @@ public class Main {
 		}
 	}
 
-	private static HashMap<String, String> parseParameters(String paramsString) {
+	private static HttpParameters parseParameters(String paramsString) {
 		var params = new HashMap<String, String>();
 		for (var param : paramsString.split("&")) {
 			var keyValuePair = param.split("=");
 			params.put(keyValuePair[0], keyValuePair[1]);
 		}
-		return params;
+		return new HttpParameters(params);
 	}
 }

@@ -1,4 +1,4 @@
-package net.bartek;
+package net.bartek.albatross;
 
 import java.util.HashMap;
 

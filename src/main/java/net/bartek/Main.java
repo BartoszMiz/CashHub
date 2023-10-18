@@ -1,5 +1,6 @@
 package net.bartek;
 
+import net.bartek.albatross.*;
 import net.bartek.logging.ConsoleLogger;
 import net.bartek.logging.ILogger;
 

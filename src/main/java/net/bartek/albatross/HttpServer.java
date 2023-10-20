@@ -22,10 +22,6 @@ public class HttpServer {
 		this.logger = logger;
 	}
 
-	public int getPort() {
-		return port;
-	}
-
 	public boolean bind() {
 		try {
 			serverSocket = new ServerSocket(port);
@@ -71,9 +67,8 @@ public class HttpServer {
 		}
 
 		var response = new HttpResponse(statusCode, headers, fileContents);
-		try {
-			httpRequest.connection().getOutputStream().write(response.toBytes());
-			httpRequest.connection().close();
+		try(var connection = httpRequest.connection()){
+			connection.getOutputStream().write(response.toBytes());
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to send response: %s", e.getMessage()));
 		}

@@ -16,15 +16,12 @@ public record HttpResponse(HttpStatusCode statusCode, HttpHeaders headers, byte[
 		sb.append(String.format("Content-Length: %s\r\n", contentLength));
 		sb.append("\r\n");
 
-		// disgusting 🤢🤮...
 		var headerBytes = sb.toString().getBytes();
 		var bytes = new byte[headerBytes.length + contentLength];
 
-		for (int i = 0; i < headerBytes.length; i++) {
-			bytes[i] = headerBytes[i];
-		}
-		for (int i = 0; i < contentLength; i++) {
-			bytes[i + headerBytes.length] = content[i];
+		System.arraycopy(headerBytes, 0, bytes, 0, headerBytes.length);
+		if (content != null) {
+			System.arraycopy(content, 0, bytes, headerBytes.length, contentLength);
 		}
 
 		return bytes;

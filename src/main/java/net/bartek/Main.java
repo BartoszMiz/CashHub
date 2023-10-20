@@ -5,17 +5,14 @@ import net.bartek.logging.ConsoleLogger;
 import net.bartek.logging.ILogger;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
 
 public class Main {
 	private static final int PORT = 8080;

@@ -48,14 +48,19 @@ public class HttpServer {
 		// TODO: Handle routing
 
 
+		var file = new File("wwwroot" + httpRequest.url());
+		var fileName = file.toPath().getFileName().toString();
+		var fileNameSplit = fileName.split("\\.");
+		var extension = fileNameSplit[fileNameSplit.length - 1];
+
 		byte[] fileContents = null;
 		var headers = new HttpHeaders(new HashMap<>());
 		headers.value().put("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
 		headers.value().put("Server", "Albatross");
 		headers.value().put("Cache-Control", "no-cache");
-		headers.value().put("Content-Type", "text/html");
+		headers.value().put("Content-Type", String.format("text/%s", extension));
 		try {
-			fileContents = Files.readAllBytes(new File("wwwroot" + httpRequest.url()).toPath());
+			fileContents = Files.readAllBytes(file.toPath());
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to read file: %s", e.getMessage()));
 		}
@@ -89,8 +94,7 @@ public class HttpServer {
 			return null;
 		}
 
-		var request = parseRequest(requestString, connection);
-		return request;
+		return parseRequest(requestString, connection);
 	}
 
 	private String readRequest(Socket socket) {

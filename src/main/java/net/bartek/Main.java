@@ -4,11 +4,18 @@ import net.bartek.albatross.*;
 import net.bartek.logging.ConsoleLogger;
 import net.bartek.logging.ILogger;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
 
 public class Main {
 	private static final int PORT = 8080;
@@ -32,6 +39,27 @@ public class Main {
 				var requestString = readRequest(connection);
 				var httpRequest = parseRequest(requestString);
 				logger.LogDebug(httpRequest.toString());
+
+				HttpResponse httpResponse;
+				var responseHeaders = new HashMap<String, String>();
+				responseHeaders.put("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
+				responseHeaders.put("Server", "Albatross");
+				responseHeaders.put("Cache-Control", "no-cache");
+				responseHeaders.put("Content-Type", "text/html");
+
+				var filePath = "wwwroot" + httpRequest.url();
+				var requestedFile = new File(filePath);
+				if (!requestedFile.isFile() || !requestedFile.exists()) {
+					logger.LogError(String.format("File %s not found!", httpRequest.url()));
+					httpResponse = new HttpResponse(HttpStatusCode.NotFound, new HttpHeaders(responseHeaders), null);
+				} else {
+					var fileContent = Files.readAllBytes(requestedFile.toPath());
+					logger.LogInformation(String.format("Serving: %s", httpRequest.url()));
+					httpResponse = new HttpResponse(HttpStatusCode.OK, new HttpHeaders(responseHeaders), fileContent);
+				}
+
+				var out = connection.getOutputStream();
+				out.write(httpResponse.toBytes());
 
 				connection.close();
 			}
@@ -60,7 +88,6 @@ public class Main {
 			byteArray[i] = requestBytes.get(i);
 		}
 
-		in.close();
 		return new String(byteArray);
 	}
 

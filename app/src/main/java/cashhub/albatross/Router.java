@@ -28,11 +28,19 @@ public class Router {
 
 	public HttpResponse handleRequest(HttpRequest request) {
 		var route = request.url();
+		HttpResponse response;
 		if (routeOverrides.containsKey(route)) {
-			return routeOverrides.get(route).execute(request);
+			response =  routeOverrides.get(route).execute(request);
+			response.headers().value().putIfAbsent("Content-Type", "application/json");
+		} else {
+			response = serveStaticContent(request);
 		}
 
-		return serveStaticContent(request);
+		response.headers().value().putIfAbsent("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
+		response.headers().value().putIfAbsent("Server", "Albatross");
+		response.headers().value().putIfAbsent("Cache-Control", "no-cache");
+
+		return response;
 	}
 
 
@@ -44,9 +52,6 @@ public class Router {
 
 		byte[] fileContents = null;
 		var headers = new HttpHeaders(new HashMap<>());
-		headers.value().put("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
-		headers.value().put("Server", "Albatross");
-		headers.value().put("Cache-Control", "no-cache");
 		headers.value().put("Content-Type", String.format("text/%s", extension));
 		try {
 			fileContents = Files.readAllBytes(file.toPath());

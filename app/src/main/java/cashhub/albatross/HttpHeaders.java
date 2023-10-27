@@ -1,4 +1,4 @@
-package net.bartek.albatross;
+package cashhub.albatross;
 
 import java.util.HashMap;
 

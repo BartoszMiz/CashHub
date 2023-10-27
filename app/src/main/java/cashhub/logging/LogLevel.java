@@ -1,4 +1,4 @@
-package net.bartek.logging;
+package cashhub.logging;
 
 public enum LogLevel {
 	Debug,

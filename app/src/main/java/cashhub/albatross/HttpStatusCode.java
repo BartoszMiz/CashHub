@@ -1,4 +1,4 @@
-package net.bartek.albatross;
+package cashhub.albatross;
 
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 public enum HttpStatusCode {

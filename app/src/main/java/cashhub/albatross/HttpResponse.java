@@ -1,4 +1,4 @@
-package net.bartek.albatross;
+package cashhub.albatross;
 
 public record HttpResponse(HttpStatusCode statusCode, HttpHeaders headers, byte[] content) {
 	public byte[] toBytes() {

@@ -14,11 +14,13 @@ import java.util.HashMap;
 
 public class HttpServer {
 	private final int port;
+	private final Router router;
 	private final ILogger logger;
 	private ServerSocket serverSocket;
 
-	public HttpServer(int port, ILogger logger) {
+	public HttpServer(int port, Router router, ILogger logger) {
 		this.port = port;
+		this.router = router;
 		this.logger = logger;
 	}
 
@@ -42,31 +44,8 @@ public class HttpServer {
 		logger.LogInformation(String.format("Received request for %s", httpRequest.url()));
 
 		// TODO: Handle routing
+		var response = router.handleRequest(httpRequest);
 
-
-		var file = new File("wwwroot" + httpRequest.url());
-		var fileName = file.toPath().getFileName().toString();
-		var fileNameSplit = fileName.split("\\.");
-		var extension = fileNameSplit[fileNameSplit.length - 1];
-
-		byte[] fileContents = null;
-		var headers = new HttpHeaders(new HashMap<>());
-		headers.value().put("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
-		headers.value().put("Server", "Albatross");
-		headers.value().put("Cache-Control", "no-cache");
-		headers.value().put("Content-Type", String.format("text/%s", extension));
-		try {
-			fileContents = Files.readAllBytes(file.toPath());
-		} catch (IOException e) {
-			logger.LogError(String.format("Failed to read file: %s", e.getMessage()));
-		}
-
-		var statusCode = HttpStatusCode.OK;
-		if (fileContents == null) {
-			statusCode = HttpStatusCode.NotFound;
-		}
-
-		var response = new HttpResponse(statusCode, headers, fileContents);
 		try(var connection = httpRequest.connection()){
 			connection.getOutputStream().write(response.toBytes());
 		} catch (IOException e) {

@@ -1,4 +1,4 @@
-package net.bartek.logging;
+package cashhub.logging;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

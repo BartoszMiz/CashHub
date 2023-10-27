@@ -1,4 +1,4 @@
-package net.bartek.logging;
+package cashhub.logging;
 
 public interface ILogger {
 	public void Log(LogLevel level, String message);

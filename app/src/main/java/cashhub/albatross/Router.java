@@ -30,15 +30,11 @@ public class Router {
 		var route = request.url();
 		HttpResponse response;
 		if (routeOverrides.containsKey(route)) {
-			response =  routeOverrides.get(route).execute(request);
+			response = routeOverrides.get(route).execute(request);
 			response.headers().value().putIfAbsent("Content-Type", "application/json");
 		} else {
 			response = serveStaticContent(request);
 		}
-
-		response.headers().value().putIfAbsent("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
-		response.headers().value().putIfAbsent("Server", "Albatross");
-		response.headers().value().putIfAbsent("Cache-Control", "no-cache");
 
 		return response;
 	}
@@ -50,20 +46,23 @@ public class Router {
 		var fileNameSplit = fileName.split("\\.");
 		var extension = fileNameSplit[fileNameSplit.length - 1];
 
+		var response = HttpResponseBuilder.create()
+				.withDefaultHeaders()
+				.withHeader("Content-Type", String.format("text/%s", extension));
+
 		byte[] fileContents = null;
-		var headers = new HttpHeaders(new HashMap<>());
-		headers.value().put("Content-Type", String.format("text/%s", extension));
 		try {
 			fileContents = Files.readAllBytes(file.toPath());
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to read file: %s", e.getMessage()));
 		}
 
-		var statusCode = HttpStatusCode.OK;
 		if (fileContents == null) {
-			statusCode = HttpStatusCode.NotFound;
+			response.withStatusCode(HttpStatusCode.NotFound);
+		} else {
+			response.withStatusCode(HttpStatusCode.OK);
 		}
 
-		return new HttpResponse(statusCode, headers, fileContents);
+		return response.build();
 	}
 }

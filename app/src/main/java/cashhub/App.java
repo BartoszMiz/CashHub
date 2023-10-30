@@ -1,18 +1,10 @@
 package cashhub;
 
-import cashhub.albatross.*;
+import cashhub.albatross.HttpResponseBuilder;
+import cashhub.albatross.HttpServer;
+import cashhub.albatross.HttpStatusCode;
+import cashhub.albatross.Router;
 import cashhub.logging.ConsoleLogger;
-import cashhub.logging.ILogger;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.file.Files;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class App {
 	private static final int PORT = 8080;
@@ -21,11 +13,11 @@ public class App {
 		var logger = new ConsoleLogger();
 
 		var router = new Router(logger);
-		router.addRoute("/helloworld", request -> {
-			var responseBytes = "\"Hello, world!\"".getBytes();
-			var httpResponse = new HttpResponse(HttpStatusCode.OK, new HttpHeaders(new HashMap<>()), responseBytes);
-			return httpResponse;
-		});
+		router.addRoute("/helloworld", request -> HttpResponseBuilder.create()
+				.withStatusCode(HttpStatusCode.OK)
+				.withDefaultHeaders()
+				.withContent("Hello, world!".getBytes())
+				.build());
 
 		var httpServer = new HttpServer(PORT, router, logger);
 		if (!httpServer.bind()) {

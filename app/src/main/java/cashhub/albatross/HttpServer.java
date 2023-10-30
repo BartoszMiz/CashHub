@@ -39,7 +39,6 @@ public class HttpServer {
 		}
 		logger.LogInformation(String.format("Received request for %s", httpRequest.url()));
 
-		// TODO: Handle routing
 		var response = router.handleRequest(httpRequest);
 
 		try (var connection = httpRequest.connection()) {

@@ -32,6 +32,12 @@ java {
     }
 }
 
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "cashhub.App"
+    }
+}
+
 application {
     // Define the main class for the application.
     mainClass.set("cashhub.App")

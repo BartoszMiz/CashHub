@@ -2,7 +2,9 @@ package cashhub.albatross;
 
 import cashhub.logging.ILogger;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -68,23 +70,15 @@ public class HttpServer {
 
 	private String readRequest(Socket socket) {
 		try {
-			var in = socket.getInputStream();
-			var requestBytes = new ArrayList<Byte>();
-			var buffer = new byte[256];
-			while (in.available() > 0) {
-				var readBytes = in.read(buffer);
-				for (int i = 0; i < readBytes; i++) {
-					requestBytes.add(buffer[i]);
-				}
-			}
+			var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			var sb = new StringBuilder();
 
-			// bruh Java is high
-			var byteArray = new byte[requestBytes.size()];
-			for (int i = 0; i < byteArray.length; i++) {
-				byteArray[i] = requestBytes.get(i);
+			String line = "something"; // This string has to have some value before the loop starts
+			while (!line.isEmpty() && (line = in.readLine()) != null) {
+				sb.append(line);
+				sb.append('\n');
 			}
-
-			return new String(byteArray);
+			return sb.toString().strip();
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to read request: %s", e.getMessage()));
 			return null;

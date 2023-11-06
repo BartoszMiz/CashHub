@@ -61,6 +61,7 @@ public class Router {
 			response.withStatusCode(HttpStatusCode.NotFound);
 		} else {
 			response.withStatusCode(HttpStatusCode.OK);
+			response.withContent(fileContents);
 		}
 
 		return response.build();

@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class HttpServer {
@@ -54,7 +53,7 @@ public class HttpServer {
 		Socket connection;
 		try {
 			connection = serverSocket.accept();
-			logger.LogInformation(String.format("Incoming connection from: %s", connection.getRemoteSocketAddress()));
+			logger.LogDebug(String.format("Incoming connection from: %s", connection.getRemoteSocketAddress()));
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to accept connection: %s", e.getMessage()));
 			return null;

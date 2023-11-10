@@ -5,9 +5,8 @@ import cashhub.logging.ILogger;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Router {
 	public interface RequestDelegate {
@@ -15,28 +14,33 @@ public class Router {
 	}
 
 	private final ILogger logger;
-	private final HashMap<String, RequestDelegate> routeOverrides;
+	private final HashMap<String, HashMap<HttpVerb, RequestDelegate>> routeOverrides;
 
 	public Router(ILogger logger) {
 		this.logger = logger;
 		this.routeOverrides = new HashMap<>();
 	}
 
-	public void addRoute(String route, RequestDelegate delegate) {
-		routeOverrides.put(route, delegate);
+	public void addRoute(HttpVerb verb, String route, RequestDelegate delegate) {
+		var override = new HashMap<HttpVerb, RequestDelegate>();
+		override.put(verb, delegate);
+		routeOverrides.put(route, override);
 	}
 
 	public HttpResponse handleRequest(HttpRequest request) {
-		var route = request.url();
-		HttpResponse response;
-		if (routeOverrides.containsKey(route)) {
-			response = routeOverrides.get(route).execute(request);
+		if (routeOverrides.containsKey(request.url())) {
+			var override = routeOverrides.get(request.url());
+			if (!override.containsKey(request.verb())) {
+				logger.LogError(String.format("Unsupported method %s for route %s", request.verb(), request.url()));
+				return HttpResponseBuilder.create().withStatusCode(HttpStatusCode.MethodNotAllowed).build();
+			}
+
+			var response = override.get(request.verb()).execute(request);
 			response.headers().value().putIfAbsent("Content-Type", "application/json");
-		} else {
-			response = serveStaticContent(request);
+			return response;
 		}
 
-		return response;
+		return serveStaticContent(request);
 	}
 
 

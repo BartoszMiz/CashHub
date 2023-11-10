@@ -1,19 +1,17 @@
 package cashhub;
 
-import cashhub.albatross.HttpResponseBuilder;
-import cashhub.albatross.HttpServer;
-import cashhub.albatross.HttpStatusCode;
-import cashhub.albatross.Router;
+import cashhub.albatross.*;
 import cashhub.logging.ConsoleLogger;
+import cashhub.logging.LogLevel;
 
 public class App {
 	private static final int PORT = 8080;
 
 	public static void main(String[] args) {
-		var logger = new ConsoleLogger();
+		var logger = new ConsoleLogger(LogLevel.Debug);
 
 		var router = new Router(logger);
-		router.addRoute("/helloworld", request -> HttpResponseBuilder.create()
+		router.addRoute(HttpVerb.GET, "/helloworld", request -> HttpResponseBuilder.create()
 				.withStatusCode(HttpStatusCode.OK)
 				.withDefaultHeaders()
 				.withContent("Hello, world!".getBytes())

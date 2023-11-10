@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Router {
 	public interface RequestDelegate {
@@ -36,13 +35,12 @@ public class Router {
 			}
 
 			var response = override.get(request.verb()).execute(request);
-			response.headers().value().putIfAbsent("Content-Type", "application/json");
+			response.headers().value().putIfAbsent("Content-Type", ExtensionToMimeMapper.getMime("json"));
 			return response;
 		}
 
 		return serveStaticContent(request);
 	}
-
 
 	private HttpResponse serveStaticContent(HttpRequest httpRequest) {
 		var file = new File("wwwroot" + httpRequest.url());
@@ -52,7 +50,7 @@ public class Router {
 
 		var response = HttpResponseBuilder.create()
 				.withDefaultHeaders()
-				.withHeader("Content-Type", String.format("text/%s", extension));
+				.withHeader("Content-Type", ExtensionToMimeMapper.getMime(extension));
 
 		byte[] fileContents = null;
 		try {

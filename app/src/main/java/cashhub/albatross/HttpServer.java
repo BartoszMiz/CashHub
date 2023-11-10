@@ -34,38 +34,41 @@ public class HttpServer {
 	}
 
 	public void processRequest() {
-		var httpRequest = acceptRequest();
-		if (httpRequest == null) {
+		var connection = acceptConnection();
+		if (connection == null) {
 			return;
 		}
-		logger.LogInformation(String.format("Received request for %s", httpRequest.url()));
 
-		var response = router.handleRequest(httpRequest);
+		new Thread(() -> {
+			var requestString = readRequest(connection);
+			if (requestString == null) {
+				return;
+			}
 
-		try (var connection = httpRequest.connection()) {
-			connection.getOutputStream().write(response.toBytes());
-		} catch (IOException e) {
-			logger.LogError(String.format("Failed to send response: %s", e.getMessage()));
-		}
+			var httpRequest = parseRequest(requestString, connection);
+			logger.LogInformation(String.format("Received request for %s", httpRequest.url()));
+
+			var response = router.handleRequest(httpRequest);
+
+			try (var connection1 = httpRequest.connection()) {
+				connection1.getOutputStream().write(response.toBytes());
+			} catch (IOException e) {
+				logger.LogError(String.format("Failed to send response: %s", e.getMessage()));
+			}
+		}).start();
 	}
 
-	private HttpRequest acceptRequest() {
-		Socket connection;
+	private Socket acceptConnection() {
 		try {
-			connection = serverSocket.accept();
+			var connection = serverSocket.accept();
 			logger.LogDebug(String.format("Incoming connection from: %s", connection.getRemoteSocketAddress()));
+			return connection;
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to accept connection: %s", e.getMessage()));
 			return null;
 		}
-
-		var requestString = readRequest(connection);
-		if (requestString == null) {
-			return null;
-		}
-
-		return parseRequest(requestString, connection);
 	}
+
 
 	private String readRequest(Socket socket) {
 		try {

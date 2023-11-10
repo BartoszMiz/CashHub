@@ -12,10 +12,10 @@ public class App {
 
 		var router = new Router(logger);
 		router.addRoute(HttpVerb.GET, "/helloworld", request -> HttpResponseBuilder.create()
-				.withStatusCode(HttpStatusCode.OK)
-				.withDefaultHeaders()
-				.withContent("Hello, world!".getBytes())
-				.build());
+			.withStatusCode(HttpStatusCode.OK)
+			.withDefaultHeaders()
+			.withContent("Hello, world!".getBytes())
+			.build());
 
 		var httpServer = new HttpServer(PORT, router, logger);
 		if (!httpServer.bind()) {

@@ -1,5 +1,12 @@
-#test {
+h3 {
+    margin-bottom: 0;
+}
+
+article > h1 {
+    margin-bottom: 0;
+}
+
+footer {
     text-align: center;
-    font-size: 10rem;
-    font-weight: bold;
+    font-size: 0.75rem;
 }

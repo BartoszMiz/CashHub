@@ -1,5 +1,9 @@
 package cashhub.albatross;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Files;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -52,6 +56,28 @@ public class HttpResponseBuilder {
 			this.content.add(b);
 		}
 		return this;
+	}
+
+	public HttpResponseBuilder fromFile(String path) throws IOException{
+		var file = new File("wwwroot" + path);
+		var fileName = file.toPath().getFileName().toString();
+		var fileNameSplit = fileName.split("\\.");
+		var extension = fileNameSplit[fileNameSplit.length - 1];
+
+		byte[] fileContents = null;
+		fileContents = Files.readAllBytes(file.toPath());
+
+		if (fileContents == null) {
+			return this
+					.withDefaultHeaders()
+					.withStatusCode(HttpStatusCode.NotFound);
+		}
+
+		return this
+				.withDefaultHeaders()
+				.withHeader("Content-Type", ExtensionToMimeMapper.getMime(extension))
+				.withStatusCode(HttpStatusCode.OK)
+				.withContent(fileContents);
 	}
 
 	public HttpResponse build() {

@@ -2,9 +2,7 @@ package cashhub.albatross;
 
 import cashhub.logging.ILogger;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.HashMap;
 
 public class Router {
@@ -43,29 +41,18 @@ public class Router {
 	}
 
 	private HttpResponse serveStaticContent(HttpRequest httpRequest) {
-		var file = new File("wwwroot" + httpRequest.url());
-		var fileName = file.toPath().getFileName().toString();
-		var fileNameSplit = fileName.split("\\.");
-		var extension = fileNameSplit[fileNameSplit.length - 1];
-
-		var response = HttpResponseBuilder.create()
-				.withDefaultHeaders()
-				.withHeader("Content-Type", ExtensionToMimeMapper.getMime(extension));
-
-		byte[] fileContents = null;
 		try {
-			fileContents = Files.readAllBytes(file.toPath());
+			return HttpResponseBuilder
+					.create()
+					.fromFile(httpRequest.url())
+					.build();
 		} catch (IOException e) {
-			logger.LogError(String.format("Failed to read file: %s", e.getMessage()));
+			logger.LogError(String.format("Failed to read file %s: %s", httpRequest.url(), e.getMessage()));
+			return HttpResponseBuilder
+					.create()
+					.withDefaultHeaders()
+					.withStatusCode(HttpStatusCode.InternalServerError)
+					.build();
 		}
-
-		if (fileContents == null) {
-			response.withStatusCode(HttpStatusCode.NotFound);
-		} else {
-			response.withStatusCode(HttpStatusCode.OK);
-			response.withContent(fileContents);
-		}
-
-		return response.build();
 	}
 }

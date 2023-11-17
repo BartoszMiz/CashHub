@@ -13,21 +13,9 @@ public class App {
 		var logger = new ConsoleLogger(LogLevel.Debug);
 
 		var router = new Router(logger);
-		router.addRoute(HttpVerb.GET, "/", request -> {
-			try {
-				return HttpResponseBuilder.create()
-						.fromFile("/index.html")
-						.build();
-			} catch(IOException e) {
-				logger.LogError(String.format("Failed to read file %s: %s", request.url(), e.getMessage()));
-				return HttpResponseBuilder
-						.create()
-						.withDefaultHeaders()
-						.withStatusCode(HttpStatusCode.NotFound)
-						.build();
-			}
-
-		});
+		router.addRoute(HttpVerb.GET, "/", request ->
+			HttpResponseBuilder.create().redirectTo("/index.html")
+		);
 
 		router.addRoute(HttpVerb.GET, "/helloworld", request -> HttpResponseBuilder.create()
 			.withStatusCode(HttpStatusCode.OK)

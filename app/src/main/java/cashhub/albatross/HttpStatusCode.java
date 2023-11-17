@@ -4,6 +4,7 @@ package cashhub.albatross;
 public enum HttpStatusCode {
 	OK(200),
 	Created(201),
+	Found(302),
 	BadRequest(400),
 	Unauthorized(401),
 	Forbidden(403),

@@ -89,4 +89,13 @@ public class HttpResponseBuilder {
 		}
 		return new HttpResponse(statusCode, headers, bytes);
 	}
+
+	public HttpResponse redirectTo(String url) {
+		return HttpResponseBuilder
+				.create()
+				.withStatusCode(HttpStatusCode.Found)
+				.withDefaultHeaders()
+				.withHeader("Location", url)
+				.build();
+	}
 }

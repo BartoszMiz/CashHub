@@ -2,7 +2,6 @@ package cashhub.albatross;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,8 +11,8 @@ import java.util.HashMap;
 
 public class HttpResponseBuilder {
 	private HttpStatusCode statusCode;
-	private HttpHeaders headers;
-	private ArrayList<Byte> content;
+	private final HttpHeaders headers;
+	private final ArrayList<Byte> content;
 
 	private HttpResponseBuilder() {
 		statusCode = HttpStatusCode.OK;
@@ -64,15 +63,13 @@ public class HttpResponseBuilder {
 		var fileNameSplit = fileName.split("\\.");
 		var extension = fileNameSplit[fileNameSplit.length - 1];
 
-		byte[] fileContents = null;
-		fileContents = Files.readAllBytes(file.toPath());
-
-		if (fileContents == null) {
+		if (!file.exists() && !file.isFile()) {
 			return this
 					.withDefaultHeaders()
 					.withStatusCode(HttpStatusCode.NotFound);
 		}
 
+		var fileContents = Files.readAllBytes(file.toPath());
 		return this
 				.withDefaultHeaders()
 				.withHeader("Content-Type", ExtensionToMimeMapper.getMime(extension))
@@ -82,7 +79,7 @@ public class HttpResponseBuilder {
 
 	public HttpResponse build() {
 		byte[] bytes;
-		if (content.size() == 0) {
+		if (content.isEmpty()) {
 			bytes = null;
 		} else {
 			bytes = new byte[content.size()];

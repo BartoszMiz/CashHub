@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class HttpServer {
@@ -98,7 +100,7 @@ public class HttpServer {
 		var routeAndParams = requestLines[0].split(" ")[1];
 		var route = routeAndParams.split("\\?")[0];
 
-		HttpParameters parameters = null;
+		HttpParameters parameters = new HttpParameters(new HashMap<>());
 		if (routeAndParams.contains("?")) {
 			var paramString = routeAndParams.split("\\?")[1];
 			parameters = parseParameters(paramString);
@@ -113,7 +115,10 @@ public class HttpServer {
 		var params = new HashMap<String, String>();
 		for (var param : paramsString.split("&")) {
 			var keyValuePair = param.split("=");
-			params.put(keyValuePair[0], keyValuePair[1]);
+			params.put(
+					URLDecoder.decode(keyValuePair[0], StandardCharsets.UTF_8),
+					URLDecoder.decode(keyValuePair[1], StandardCharsets.UTF_8)
+			);
 		}
 		return new HttpParameters(params);
 	}

@@ -57,7 +57,7 @@ public class HttpResponseBuilder {
 		return this;
 	}
 
-	public HttpResponseBuilder fromFile(String path) throws IOException{
+	public HttpResponseBuilder fromFile(String path) throws IOException {
 		var file = new File("wwwroot" + path);
 		var fileName = file.toPath().getFileName().toString();
 		var fileNameSplit = fileName.split("\\.");
@@ -90,12 +90,28 @@ public class HttpResponseBuilder {
 		return new HttpResponse(statusCode, headers, bytes);
 	}
 
-	public HttpResponse redirectTo(String url) {
+	public static HttpResponse redirectTo(String url) {
 		return HttpResponseBuilder
 				.create()
 				.withStatusCode(HttpStatusCode.Found)
 				.withDefaultHeaders()
 				.withHeader("Location", url)
+				.build();
+	}
+
+	public static HttpResponse fromTemplate(String templatePath, HashMap<String, String> parameters) throws IOException {
+		var file = new File("wwwroot/templates" + templatePath);
+		var fileName = file.toPath().getFileName().toString();
+		var fileNameSplit = fileName.split("\\.");
+		var extension = fileNameSplit[fileNameSplit.length - 1];
+
+		var content = TemplateProcessor.processTemplate(file.toPath(), parameters);
+		return HttpResponseBuilder
+				.create()
+				.withStatusCode(HttpStatusCode.OK)
+				.withContent(content.getBytes())
+				.withHeader("Content-Type", ExtensionToMimeMapper.getMime(extension))
+				.withDefaultHeaders()
 				.build();
 	}
 }

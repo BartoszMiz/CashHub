@@ -16,7 +16,7 @@ public class App {
 
 		var router = new Router(logger);
 		router.addRoute(HttpVerb.GET, "/", request ->
-			HttpResponseBuilder.create().redirectTo("/index.html")
+			HttpResponseBuilder.redirectTo("/index.html")
 		);
 
 		router.addRoute(HttpVerb.GET, "/helloworld", request -> HttpResponseBuilder.create()

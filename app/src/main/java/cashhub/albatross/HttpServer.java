@@ -2,13 +2,12 @@ package cashhub.albatross;
 
 import cashhub.logging.ILogger;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class HttpServer {
@@ -74,15 +73,10 @@ public class HttpServer {
 
 	private String readRequest(Socket socket) {
 		try {
-			var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			var sb = new StringBuilder();
-
-			String line = "something"; // This string has to have some value before the loop starts
-			while (!line.isEmpty() && (line = in.readLine()) != null) {
-				sb.append(line);
-				sb.append('\n');
-			}
-			return sb.toString().strip();
+			// TODO: Find a better way to read from the socket
+			var data = new byte[8*1024];
+			var bytesRead = socket.getInputStream().read(data);
+			return new String(Arrays.copyOfRange(data,0,bytesRead)).strip();
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to read request: %s", e.getMessage()));
 			return null;
@@ -92,8 +86,10 @@ public class HttpServer {
 	private HttpRequest parseRequest(String requestString, Socket connection) {
 		HttpVerb requestVerb = null;
 		for (var verb : HttpVerb.values()) {
-			if (requestString.startsWith(verb.toString()))
+			if (requestString.startsWith(verb.toString())) {
 				requestVerb = verb;
+				break;
+			}
 		}
 
 		var requestLines = requestString.split("\n");
@@ -101,9 +97,13 @@ public class HttpServer {
 		var route = routeAndParams.split("\\?")[0];
 
 		HttpParameters parameters = new HttpParameters(new HashMap<>());
-		if (routeAndParams.contains("?")) {
-			var paramString = routeAndParams.split("\\?")[1];
-			parameters = parseParameters(paramString);
+		if (requestVerb == HttpVerb.GET) {
+			if (routeAndParams.contains("?")) {
+				var paramString = routeAndParams.split("\\?")[1];
+				parameters = parseParameters(paramString);
+			}
+		} else {
+			parameters = parseParameters(requestLines[requestLines.length - 1]);
 		}
 
 		var headers = parseHeaders(requestLines);

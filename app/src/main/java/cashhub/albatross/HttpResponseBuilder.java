@@ -20,20 +20,19 @@ public class HttpResponseBuilder {
 		content = new ArrayList<>();
 	}
 
+	private HttpResponseBuilder addDefaultHeaders() {
+		return this
+				.withHeader("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()))
+				.withHeader("Server", "Albatross");
+	}
+
 	public static HttpResponseBuilder create() {
-		return new HttpResponseBuilder();
+		return new HttpResponseBuilder().addDefaultHeaders();
 	}
 
 	public HttpResponseBuilder withStatusCode(HttpStatusCode code) {
 		this.statusCode = code;
 		return this;
-	}
-
-	public HttpResponseBuilder withDefaultHeaders() {
-		return this
-				.withHeader("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()))
-				.withHeader("Server", "Albatross")
-				.withHeader("Cache-Control", "no-cache");
 	}
 
 	public HttpResponseBuilder withHeader(String name, String value) {
@@ -57,6 +56,10 @@ public class HttpResponseBuilder {
 		return this;
 	}
 
+	public HttpResponseBuilder withContent(String content) {
+		return this.withContent(content.getBytes());
+	}
+
 	public HttpResponseBuilder fromFile(String path) throws IOException {
 		var file = new File("wwwroot" + path);
 		var fileName = file.toPath().getFileName().toString();
@@ -65,13 +68,11 @@ public class HttpResponseBuilder {
 
 		if (!file.exists() && !file.isFile()) {
 			return this
-					.withDefaultHeaders()
 					.withStatusCode(HttpStatusCode.NotFound);
 		}
 
 		var fileContents = Files.readAllBytes(file.toPath());
 		return this
-				.withDefaultHeaders()
 				.withHeader("Content-Type", ExtensionToMimeMapper.getMime(extension))
 				.withStatusCode(HttpStatusCode.OK)
 				.withContent(fileContents);
@@ -94,7 +95,6 @@ public class HttpResponseBuilder {
 		return HttpResponseBuilder
 				.create()
 				.withStatusCode(HttpStatusCode.Found)
-				.withDefaultHeaders()
 				.withHeader("Location", url)
 				.build();
 	}
@@ -109,9 +109,8 @@ public class HttpResponseBuilder {
 		return HttpResponseBuilder
 				.create()
 				.withStatusCode(HttpStatusCode.OK)
-				.withContent(content.getBytes())
+				.withContent(content)
 				.withHeader("Content-Type", ExtensionToMimeMapper.getMime(extension))
-				.withDefaultHeaders()
 				.build();
 	}
 }

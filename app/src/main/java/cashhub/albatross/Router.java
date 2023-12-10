@@ -50,7 +50,6 @@ public class Router {
 			logger.LogError(String.format("Failed to read file %s: %s", httpRequest.url(), e.getMessage()));
 			return HttpResponseBuilder
 					.create()
-					.withDefaultHeaders()
 					.withStatusCode(HttpStatusCode.InternalServerError)
 					.build();
 		}

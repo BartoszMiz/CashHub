@@ -74,7 +74,7 @@ public class HttpServer {
 	private String readRequest(Socket socket) {
 		try {
 			// TODO: Find a better way to read from the socket
-			var data = new byte[8*1024];
+			var data = new byte[socket.getInputStream().available()];
 			var bytesRead = socket.getInputStream().read(data);
 			return new String(Arrays.copyOfRange(data,0,bytesRead)).strip();
 		} catch (IOException e) {

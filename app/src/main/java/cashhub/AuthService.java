@@ -10,7 +10,7 @@ public class AuthService {
 	public String GenerateAuthToken(UUID userId) {
 		var data = userId.toString().getBytes();
 		var encryptedData = Encrypt(data, encryptionPassphrase.getBytes());
-		return Arrays.toString(Base64.getEncoder().encode(encryptedData));
+		return new String(Base64.getEncoder().encode(encryptedData));
 	}
 
 	public boolean ValidateAuthToken(String token, UUID userId) {
@@ -19,6 +19,7 @@ public class AuthService {
 		return data.equals(userId.toString());
 	}
 
+	// XOR == encryption LOL
 	private byte[] Encrypt(byte[] data, byte[] passphrase) {
 		var result = new byte[data.length];
 		for (int i = 0; i < data.length; i++) {

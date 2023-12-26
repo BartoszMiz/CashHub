@@ -44,6 +44,7 @@ public class UserService {
 		}
 
 		userRepo.addUser(new User(id, firstName, lastName, email, hashPassword(password)));
+		logger.LogInformation(String.format("User %s registered", id));
 		return HttpResponseBuilder.create().withStatusCode(HttpStatusCode.OK).build();
 	}
 
@@ -62,12 +63,14 @@ public class UserService {
 		var user = userRepo.getUser(email);
 
 		if (user == null || !user.passwordHash().equals(passwordHash)) {
+			logger.LogWarning(String.format("Unsuccessful login attempt with credentials %s:%s", email, password));
 			return HttpResponseBuilder.create()
 					.withStatusCode(HttpStatusCode.Unauthorized)
 					.withContent("Wrong email or password!")
 					.build();
 		}
 
+		logger.LogInformation(String.format("User %s logged in successfully!", user.id()));
 		return HttpResponseBuilder.create()
 				.withStatusCode(HttpStatusCode.OK)
 				.withContent(String.format("\"token\":\"%s\"", authService.generateAuthToken(user.id())))

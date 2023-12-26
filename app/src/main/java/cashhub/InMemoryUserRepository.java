@@ -1,6 +1,7 @@
 package cashhub;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class InMemoryUserRepository implements IUserRepository {
@@ -11,7 +12,7 @@ public class InMemoryUserRepository implements IUserRepository {
 	}
 
 	@Override
-	public User GetUser(UUID id) {
+	public User getUser(UUID id) {
 		for (var user : users) {
 			if (user.id().equals(id)) {
 				return user;
@@ -21,7 +22,7 @@ public class InMemoryUserRepository implements IUserRepository {
 	}
 
 	@Override
-	public User GetUser(String email) {
+	public User getUser(String email) {
 		for (var user : users) {
 			if (user.email().equals(email)) {
 				return user;
@@ -30,17 +31,21 @@ public class InMemoryUserRepository implements IUserRepository {
 		return null;
 	}
 
+	public List<User> getUsers() {
+		return users;
+	}
+
 	@Override
-	public void AddUser(User user) {
-		if (GetUser(user.id()) != null) {
+	public void addUser(User user) {
+		if (getUser(user.id()) != null) {
 			return;
 		}
 		users.add(user);
 	}
 
 	@Override
-	public void UpdateUser(User user) {
-		var oldUser = GetUser(user.id());
+	public void updateUser(User user) {
+		var oldUser = getUser(user.id());
 		if (oldUser == null) {
 			return;
 		}
@@ -50,8 +55,8 @@ public class InMemoryUserRepository implements IUserRepository {
 	}
 
 	@Override
-	public void DeleteUser(UUID id) {
-		var user = GetUser(id);
+	public void deleteUser(UUID id) {
+		var user = getUser(id);
 		users.remove(user);
 	}
 }

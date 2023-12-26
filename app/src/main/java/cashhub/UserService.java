@@ -22,7 +22,7 @@ public class UserService {
 		this.logger = logger;
 	}
 
-	public HttpResponse RegisterUser(HttpRequest request) {
+	public HttpResponse registerUser(HttpRequest request) {
 		var id = UUID.randomUUID();
 		var firstName = request.parameters().value().get("firstname");
 		var lastName = request.parameters().value().get("lastname");
@@ -36,18 +36,18 @@ public class UserService {
 					.build();
 		}
 
-		if (userRepo.GetUser(email) != null) {
+		if (userRepo.getUser(email) != null) {
 			return HttpResponseBuilder.create()
 					.withStatusCode(HttpStatusCode.Unauthorized)
 					.withContent("A user with the supplied email is already registered!")
 					.build();
 		}
 
-		userRepo.AddUser(new User(id, firstName, lastName, email, HashPassword(password)));
+		userRepo.addUser(new User(id, firstName, lastName, email, hashPassword(password)));
 		return HttpResponseBuilder.create().withStatusCode(HttpStatusCode.OK).build();
 	}
 
-	public HttpResponse LoginUser(HttpRequest request) {
+	public HttpResponse loginUser(HttpRequest request) {
 		var email = request.parameters().value().get("email");
 		var password = request.parameters().value().get("password");
 
@@ -58,8 +58,8 @@ public class UserService {
 					.build();
 		}
 
-		var passwordHash = HashPassword(password);
-		var user = userRepo.GetUser(email);
+		var passwordHash = hashPassword(password);
+		var user = userRepo.getUser(email);
 
 		if (user == null || !user.passwordHash().equals(passwordHash)) {
 			return HttpResponseBuilder.create()
@@ -70,11 +70,11 @@ public class UserService {
 
 		return HttpResponseBuilder.create()
 				.withStatusCode(HttpStatusCode.OK)
-				.withContent(String.format("\"token\":\"%s\"", authService.GenerateAuthToken(user.id())))
+				.withContent(String.format("\"token\":\"%s\"", authService.generateAuthToken(user.id())))
 				.build();
 	}
 
-	private String HashPassword(String password) {
+	private String hashPassword(String password) {
 		MessageDigest messageDigest;
 		try {
 			messageDigest = MessageDigest.getInstance("SHA-256");

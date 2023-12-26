@@ -7,20 +7,20 @@ import java.util.UUID;
 public class AuthService {
 	private final String encryptionPassphrase = "super-omega-secure-passphrase";
 
-	public String GenerateAuthToken(UUID userId) {
+	public String generateAuthToken(UUID userId) {
 		var data = userId.toString().getBytes();
-		var encryptedData = Encrypt(data, encryptionPassphrase.getBytes());
+		var encryptedData = encrypt(data, encryptionPassphrase.getBytes());
 		return new String(Base64.getEncoder().encode(encryptedData));
 	}
 
-	public boolean ValidateAuthToken(String token, UUID userId) {
+	public boolean validateAuthToken(String token, UUID userId) {
 		var encryptedData = Base64.getDecoder().decode(token);
-		var data = Arrays.toString(Encrypt(encryptedData, encryptionPassphrase.getBytes()));
+		var data = Arrays.toString(encrypt(encryptedData, encryptionPassphrase.getBytes()));
 		return data.equals(userId.toString());
 	}
 
 	// XOR == encryption LOL
-	private byte[] Encrypt(byte[] data, byte[] passphrase) {
+	private byte[] encrypt(byte[] data, byte[] passphrase) {
 		var result = new byte[data.length];
 		for (int i = 0; i < data.length; i++) {
 			result[i] = (byte)(data[i] ^ passphrase[i % passphrase.length]);

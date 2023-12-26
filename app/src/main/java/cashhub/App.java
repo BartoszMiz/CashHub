@@ -1,9 +1,6 @@
 package cashhub;
 
-import cashhub.albatross.HttpResponseBuilder;
-import cashhub.albatross.HttpServer;
-import cashhub.albatross.HttpVerb;
-import cashhub.albatross.Router;
+import cashhub.albatross.*;
 import cashhub.logging.ConsoleLogger;
 import cashhub.logging.LogLevel;
 
@@ -13,7 +10,9 @@ public class App {
 	public static void main(String[] args) {
 		var logger = new ConsoleLogger(LogLevel.Debug);
 
-		var userRepo = new InMemoryUserRepository();
+		var userRepo = new CSVUserRepository("users.csv", logger);
+		userRepo.loadData();
+
 		var authService = new AuthService();
 		var userService = new UserService(userRepo, authService, logger);
 
@@ -22,8 +21,8 @@ public class App {
 				HttpResponseBuilder.redirectTo("/index.html")
 		);
 
-		router.addRoute(HttpVerb.POST, "/user/register", userService::RegisterUser);
-		router.addRoute(HttpVerb.POST, "/user/login", userService::LoginUser);
+		router.addRoute(HttpVerb.POST, "/user/register", userService::registerUser);
+		router.addRoute(HttpVerb.POST, "/user/login", userService::loginUser);
 
 		/*
 		 API routes:

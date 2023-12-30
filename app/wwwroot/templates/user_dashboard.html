@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="/css/picocss/pico.css" type="text/css">
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+
+    <title>Hello world!</title>
+</head>
+<body>
+<main class="container">
+    <nav>
+        <ul>
+            <li><a href="/"><h3>CashHub</h3></a></li>
+        </ul>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="info.html">Info</a></li>
+            <li><a href="/privacy.html">Privacy Policy</a></li>
+            <li>
+                <form style="display: inline" method="post" action="/user/logout">
+                    <button type="submit">Log out</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+    <h1 style="margin-bottom: 0">Welcome, {{full_name}}!</h1>
+    <h6>{{id}}</h6>
+    <h4>Balance: ${{balance}}</h4>
+    <hr>
+<!--    TODO: List out transactions-->
+
+
+    <footer>
+        <i>CashHub &reg; - 2023</i>
+    </footer>
+</main>
+</body>
+</html>

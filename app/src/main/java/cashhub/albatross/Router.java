@@ -42,10 +42,16 @@ public class Router {
 
 	private HttpResponse serveStaticContent(HttpRequest httpRequest) {
 		try {
-			return HttpResponseBuilder
+			var response = HttpResponseBuilder
 					.create()
 					.fromFile(httpRequest.url())
 					.build();
+
+			if (response.statusCode() == HttpStatusCode.NotFound) {
+				logger.LogWarning(String.format("Could not find the resource at %s", httpRequest.url()));
+			}
+
+			return response;
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to read file %s: %s", httpRequest.url(), e.getMessage()));
 			return HttpResponseBuilder

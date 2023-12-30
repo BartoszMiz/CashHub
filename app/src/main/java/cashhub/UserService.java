@@ -1,14 +1,13 @@
 package cashhub;
 
-import cashhub.albatross.HttpRequest;
-import cashhub.albatross.HttpResponse;
-import cashhub.albatross.HttpResponseBuilder;
-import cashhub.albatross.HttpStatusCode;
+import cashhub.albatross.*;
 import cashhub.logging.ILogger;
 
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class UserService {
@@ -53,10 +52,7 @@ public class UserService {
 		var password = request.parameters().value().get("password");
 
 		if (email == null || password == null) {
-			return HttpResponseBuilder.create()
-					.withStatusCode(HttpStatusCode.BadRequest)
-					.withContent("email or password not supplied!")
-					.build();
+			return HttpResponseBuilder.redirectTo("/login.html");
 		}
 
 		var passwordHash = hashPassword(password);
@@ -64,17 +60,36 @@ public class UserService {
 
 		if (user == null || !user.passwordHash().equals(passwordHash)) {
 			logger.LogWarning(String.format("Unsuccessful login attempt with credentials %s:%s", email, password));
-			return HttpResponseBuilder.create()
-					.withStatusCode(HttpStatusCode.Unauthorized)
-					.withContent("Wrong email or password!")
-					.build();
+			return HttpResponseBuilder.redirectTo("/login.html");
 		}
 
 		logger.LogInformation(String.format("User %s logged in successfully!", user.id()));
 		return HttpResponseBuilder.create()
 				.withStatusCode(HttpStatusCode.OK)
-				.withContent(String.format("\"token\":\"%s\"", authService.generateAuthToken(user.id())))
+				.withHeader("Set-Cookie", String.format("authtoken=%s", authService.generateAuthToken(user.id())))
+				.addRedirect("/user/dashboard")
 				.build();
+	}
+
+	public HttpResponse userDashboard(HttpRequest request) {
+		var authToken = request.cookies().get("authtoken");
+		var userId = request.cookies().get("userid");
+		if (authToken == null || userId == null || !authService.validateAuthToken(authToken, UUID.fromString(userId))) {
+			return HttpResponseBuilder.redirectTo("/");
+		}
+
+		var user = userRepo.getUser(userId);
+		var params = new HashMap<String, String>();
+		params.put("full_name", user.firstName() + " " + user.lastName());
+		params.put("id", userId);
+		params.put("balance", "420.69");
+
+		try {
+			return HttpResponseBuilder.fromTemplate("/user_dashboard.html", params);
+		} catch (IOException e) {
+			logger.LogError(String.format("Failed to read template user_dashboard.html: %s", e.getMessage()));
+			return HttpResponseBuilder.create().withStatusCode(HttpStatusCode.InternalServerError).build();
+		}
 	}
 
 	private String hashPassword(String password) {

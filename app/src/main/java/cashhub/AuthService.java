@@ -10,6 +10,7 @@ public class AuthService {
 	public String generateAuthToken(UUID userId) {
 		var data = userId.toString().getBytes();
 		var encryptedData = encrypt(data, encryptionPassphrase.getBytes());
+
 		return new String(Base64.getEncoder().encode(encryptedData));
 	}
 

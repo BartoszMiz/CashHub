@@ -107,13 +107,18 @@ public class HttpServer {
 		}
 
 		var headers = parseHeaders(requestLines);
+		var cookies = parseCookies(headers.value().get("Cookie"));
 
-		return new HttpRequest(requestVerb, route, parameters, headers, connection);
+		return new HttpRequest(requestVerb, route, parameters, headers, cookies, connection);
 	}
 
 	private HttpParameters parseParameters(String paramsString) {
 		var params = new HashMap<String, String>();
 		for (var param : paramsString.split("&")) {
+			if (!param.contains("=")) {
+				continue;
+			}
+
 			var keyValuePair = param.split("=");
 			params.put(
 					URLDecoder.decode(keyValuePair[0], StandardCharsets.UTF_8),
@@ -137,5 +142,24 @@ public class HttpServer {
 		}
 
 		return new HttpHeaders(headers);
+	}
+
+	private HashMap<String, String> parseCookies(String cookieString) {
+		var cookies = new HashMap<String, String>();
+
+		if (cookieString == null || cookieString.isBlank() || cookieString.isEmpty()) {
+			return cookies;
+		}
+
+		for (var cookie : cookieString.split(";")) {
+			var cookieNameAndValue = cookie.strip().split("=");
+			if (cookieNameAndValue.length != 2) {
+				continue;
+			}
+
+			cookies.put(cookieNameAndValue[0], cookieNameAndValue[1]);
+		}
+
+		return cookies;
 	}
 }

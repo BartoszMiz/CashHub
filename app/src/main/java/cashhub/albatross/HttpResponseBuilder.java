@@ -91,12 +91,13 @@ public class HttpResponseBuilder {
 		return new HttpResponse(statusCode, headers, bytes);
 	}
 
+	public HttpResponseBuilder addRedirect(String url) {
+		return withStatusCode(HttpStatusCode.Found)
+				.withHeader("Location", url);
+	}
+
 	public static HttpResponse redirectTo(String url) {
-		return HttpResponseBuilder
-				.create()
-				.withStatusCode(HttpStatusCode.Found)
-				.withHeader("Location", url)
-				.build();
+		return HttpResponseBuilder.create().addRedirect(url).build();
 	}
 
 	public static HttpResponse fromTemplate(String templatePath, HashMap<String, String> parameters) throws IOException {

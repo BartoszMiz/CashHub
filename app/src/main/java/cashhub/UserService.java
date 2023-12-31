@@ -23,10 +23,10 @@ public class UserService {
 
 	public HttpResponse registerUser(HttpRequest request) {
 		var id = UUID.randomUUID();
-		var firstName = request.parameters().value().get("firstname");
-		var lastName = request.parameters().value().get("lastname");
-		var email = request.parameters().value().get("email");
-		var password = request.parameters().value().get("password");
+		var firstName = request.queryParameters().value().get("firstname");
+		var lastName = request.queryParameters().value().get("lastname");
+		var email = request.queryParameters().value().get("email");
+		var password = request.queryParameters().value().get("password");
 
 		if (firstName == null || lastName == null || email == null || password == null) {
 			return HttpResponseBuilder.create()
@@ -48,8 +48,8 @@ public class UserService {
 	}
 
 	public HttpResponse loginUser(HttpRequest request) {
-		var email = request.parameters().value().get("email");
-		var password = request.parameters().value().get("password");
+		var email = request.queryParameters().value().get("email");
+		var password = request.queryParameters().value().get("password");
 
 		if (email == null || password == null) {
 			return HttpResponseBuilder.redirectTo("/login.html");

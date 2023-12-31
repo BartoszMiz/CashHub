@@ -5,10 +5,7 @@ import cashhub.logging.ILogger;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashMap;
 
 public class HttpServer {
 	private final int port;
@@ -46,7 +43,24 @@ public class HttpServer {
 				return;
 			}
 
-			var httpRequest = HttpRequestParser.parseRequest(requestString, connection);
+			HttpRequest httpRequest;
+			try {
+				httpRequest = HttpRequestParser.parseRequest(requestString, connection);
+			} catch (MalformedHttpRequestException e) {
+				var response = HttpResponseBuilder.create()
+						.withStatusCode(HttpStatusCode.BadRequest)
+						.withContent(e.getMessage())
+						.build();
+
+				try {
+					connection.getOutputStream().write(response.toBytes());
+				} catch (IOException ex) {
+					logger.LogError(String.format("Failed to send response: %s", ex.getMessage()));
+				}
+
+				return;
+			}
+
 			logger.LogInformation(String.format("Received request for %s", httpRequest.url()));
 
 			var response = router.handleRequest(httpRequest);

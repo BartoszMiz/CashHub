@@ -16,8 +16,8 @@ public class AuthService {
 
 	public boolean validateAuthToken(String token, UUID userId) {
 		var encryptedData = Base64.getDecoder().decode(token);
-		var data = Arrays.toString(encrypt(encryptedData, encryptionPassphrase.getBytes()));
-		return data.equals(userId.toString());
+		var data = encrypt(userId.toString().getBytes(), encryptionPassphrase.getBytes());
+		return Arrays.equals(data, encryptedData);
 	}
 
 	// XOR == encryption LOL

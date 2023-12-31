@@ -35,7 +35,7 @@ public class UserService {
 					.build();
 		}
 
-		if (userRepo.getUser(email) != null) {
+		if (userRepo.getUserByEmail(email) != null) {
 			return HttpResponseBuilder.create()
 					.withStatusCode(HttpStatusCode.Unauthorized)
 					.withContent("A user with the supplied email is already registered!")
@@ -56,7 +56,7 @@ public class UserService {
 		}
 
 		var passwordHash = hashPassword(password);
-		var user = userRepo.getUser(email);
+		var user = userRepo.getUserByEmail(email);
 
 		if (user == null || !user.passwordHash().equals(passwordHash)) {
 			logger.LogWarning(String.format("Unsuccessful login attempt with credentials %s:%s", email, password));
@@ -66,7 +66,8 @@ public class UserService {
 		logger.LogInformation(String.format("User %s logged in successfully!", user.id()));
 		return HttpResponseBuilder.create()
 				.withStatusCode(HttpStatusCode.OK)
-				.withHeader("Set-Cookie", String.format("authtoken=%s", authService.generateAuthToken(user.id())))
+				.withCookie("authtoken", authService.generateAuthToken(user.id()))
+				.withCookie("userid", user.id().toString())
 				.addRedirect("/user/dashboard")
 				.build();
 	}
@@ -78,7 +79,7 @@ public class UserService {
 			return HttpResponseBuilder.redirectTo("/");
 		}
 
-		var user = userRepo.getUser(userId);
+		var user = userRepo.getUserById(UUID.fromString(userId));
 		var params = new HashMap<String, String>();
 		params.put("full_name", user.firstName() + " " + user.lastName());
 		params.put("id", userId);

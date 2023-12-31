@@ -5,18 +5,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 
 public class HttpResponseBuilder {
 	private HttpStatusCode statusCode;
-	private final HttpHeaders headers;
-	private final ArrayList<Byte> content;
+	private final Map<String, String> headers;
+	private final Map<String, String> cookies;
+	private final List<Byte> content;
 
 	private HttpResponseBuilder() {
 		statusCode = HttpStatusCode.OK;
-		headers = new HttpHeaders(new HashMap<>());
+		headers = new HashMap<>();
+		cookies = new HashMap<>();
 		content = new ArrayList<>();
 	}
 
@@ -36,11 +36,12 @@ public class HttpResponseBuilder {
 	}
 
 	public HttpResponseBuilder withHeader(String name, String value) {
-		if (headers.value().containsKey(name)) {
-			headers.value().replace(name,value);
-		} else {
-			headers.value().put(name, value);
-		}
+		this.headers.put(name, value);
+		return this;
+	}
+
+	public HttpResponseBuilder withCookie(String name, String value) {
+		this.cookies.put(name, value);
 		return this;
 	}
 
@@ -88,7 +89,7 @@ public class HttpResponseBuilder {
 				bytes[i] = content.get(i);
 			}
 		}
-		return new HttpResponse(statusCode, headers, bytes);
+		return new HttpResponse(statusCode, headers, cookies, bytes);
 	}
 
 	public HttpResponseBuilder addRedirect(String url) {

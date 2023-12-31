@@ -33,7 +33,7 @@ public class Router {
 			}
 
 			var response = override.get(request.verb()).execute(request);
-			response.headers().value().putIfAbsent("Content-Type", ExtensionToMimeMapper.getMime("json"));
+			response.headers().putIfAbsent("Content-Type", ExtensionToMimeMapper.getMime("json"));
 			return response;
 		}
 

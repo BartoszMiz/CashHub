@@ -21,13 +21,13 @@ public class CSVUserRepository implements IUserRepository {
 	}
 
 	@Override
-	public User getUser(UUID id) {
-		return memoryRepo.getUser(id);
+	public User getUserById(UUID id) {
+		return memoryRepo.getUserById(id);
 	}
 
 	@Override
-	public User getUser(String email) {
-		return memoryRepo.getUser(email);
+	public User getUserByEmail(String email) {
+		return memoryRepo.getUserByEmail(email);
 	}
 
 	@Override

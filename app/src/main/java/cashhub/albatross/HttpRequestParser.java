@@ -3,6 +3,8 @@ package cashhub.albatross;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class HttpRequestParser {
@@ -30,7 +32,9 @@ public class HttpRequestParser {
 		var cookies = parseCookies(headers.get("Cookie"));
 
 		var formData = new HashMap<String, String>();
-		boolean requestBodyIsFormData = headers.get("Content-Type").equals("application/x-www-form-urlencoded");
+
+		var contentType = headers.get("Content-Type");
+		boolean requestBodyIsFormData = contentType != null && contentType.equals("application/x-www-form-urlencoded");
 		if (requestBodyIsFormData) {
 			formData = parseFormData(requestLines[requestLines.length - 1]);
 		}
@@ -50,6 +54,13 @@ public class HttpRequestParser {
 
 	private static HashMap<String, String> parseQueryParameters(String paramsString) throws MalformedHttpRequestException {
 		var queryParameters = new HashMap<String, String>();
+
+		if (paramsString == null) {
+			return queryParameters;
+		}
+
+		paramsString = URLDecoder.decode(paramsString, StandardCharsets.UTF_8);
+
 		for (var param : paramsString.split("&")) {
 			if (!param.contains("=")) {
 				throw new MalformedHttpRequestException("Malformed query parameters!");
@@ -96,6 +107,12 @@ public class HttpRequestParser {
 
 	private static HashMap<String, String> parseCookies(String cookieString) throws MalformedHttpRequestException {
 		var cookies = new HashMap<String, String>();
+
+		if (cookieString == null) {
+			return cookies;
+		}
+
+		cookieString = URLDecoder.decode(cookieString, StandardCharsets.UTF_8);
 
 		for (var cookie : cookieString.split(";")) {
 			var cookieNameAndValue = cookie.strip().split("=");

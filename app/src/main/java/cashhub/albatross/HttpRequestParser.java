@@ -14,23 +14,24 @@ public class HttpRequestParser {
 
 		var startLineElements = startLine.split(" ");
 		if (startLineElements.length != 3) {
-			throw new MalformedHttpRequestException("Start line has the wrong format!");
+			throw new MalformedHttpRequestException("Malformed start line!");
 		}
 
 		URI uri;
 		try {
 			uri = new URI(startLineElements[1]);
 		} catch (URISyntaxException e) {
-			throw new MalformedHttpRequestException("The URI is malformed!", e);
+			throw new MalformedHttpRequestException("Malformed URI!", e);
 		}
 
 		var route = uri.getPath();
 		var queryParameters = parseQueryParameters(uri.getQuery());
 		var headers = parseHeaders(requestLines);
-		var cookies = parseCookies(headers.value().get("Cookie"));
+		var cookies = parseCookies(headers.get("Cookie"));
 
 		var formData = new HashMap<String, String>();
-		if (headers.value().get("Content-Type").equals("application/x-www-form-urlencoded")) {
+		boolean requestBodyIsFormData = headers.get("Content-Type").equals("application/x-www-form-urlencoded");
+		if (requestBodyIsFormData) {
 			formData = parseFormData(requestLines[requestLines.length - 1]);
 		}
 
@@ -47,29 +48,33 @@ public class HttpRequestParser {
 		return HttpVerb.UNSUPPORTED;
 	}
 
-	private static HttpQueryParameters parseQueryParameters(String paramsString) throws MalformedHttpRequestException {
-		var params = new HashMap<String, String>();
+	private static HashMap<String, String> parseQueryParameters(String paramsString) throws MalformedHttpRequestException {
+		var queryParameters = new HashMap<String, String>();
 		for (var param : paramsString.split("&")) {
 			if (!param.contains("=")) {
 				throw new MalformedHttpRequestException("Malformed query parameters!");
 			}
 
 			var keyValuePair = param.split("=");
-			params.put(keyValuePair[0], keyValuePair[1]);
+			if (keyValuePair.length != 2) {
+				throw new MalformedHttpRequestException("Malformed query parameters!");
+			}
+
+			queryParameters.put(keyValuePair[0], keyValuePair[1]);
 		}
-		return new HttpQueryParameters(params);
+		return queryParameters;
 	}
 
 	private static HashMap<String, String> parseFormData(String formData) throws MalformedHttpRequestException {
 		try {
 			// Form data and query parameters have the same format name1=value1&name2=value2&...
-			return parseQueryParameters(formData).value();
+			return parseQueryParameters(formData);
 		} catch (MalformedHttpRequestException e) {
 			throw new MalformedHttpRequestException("Malformed form data!");
 		}
 	}
 
-	private static HttpHeaders parseHeaders(String[] requestLines) throws MalformedHttpRequestException {
+	private static HashMap<String, String> parseHeaders(String[] requestLines) throws MalformedHttpRequestException {
 		var headers = new HashMap<String, String>();
 		for (var i = 1; i < requestLines.length; i++) {
 			var line = requestLines[i];
@@ -80,13 +85,13 @@ public class HttpRequestParser {
 
 			var headerAndValue = line.split(": ");
 			if (headerAndValue.length != 2) {
-				throw new MalformedHttpRequestException("Headers are malformed!");
+				throw new MalformedHttpRequestException("Malformed headers!");
 			}
 
 			headers.put(headerAndValue[0], headerAndValue[1]);
 		}
 
-		return new HttpHeaders(headers);
+		return headers;
 	}
 
 	private static HashMap<String, String> parseCookies(String cookieString) throws MalformedHttpRequestException {
@@ -95,7 +100,7 @@ public class HttpRequestParser {
 		for (var cookie : cookieString.split(";")) {
 			var cookieNameAndValue = cookie.strip().split("=");
 			if (cookieNameAndValue.length != 2) {
-				throw new MalformedHttpRequestException("Cookies are malformed!");
+				throw new MalformedHttpRequestException("Malformed cookie!");
 			}
 
 			cookies.put(cookieNameAndValue[0], cookieNameAndValue[1]);

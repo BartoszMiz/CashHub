@@ -6,8 +6,8 @@ import java.util.Map;
 public record HttpRequest(
 		HttpVerb verb,
 		String url,
-		HttpQueryParameters queryParameters,
-		HttpHeaders headers,
+		Map<String, String> queryParameters,
+		Map<String, String> headers,
 		Map<String, String> cookies,
 		Map<String, String> formData,
 		Socket connection

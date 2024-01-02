@@ -90,7 +90,7 @@ public class HttpServer {
 			// TODO: Find a better way to read from the socket
 			var data = new byte[socket.getInputStream().available()];
 			var bytesRead = socket.getInputStream().read(data);
-			return new String(Arrays.copyOfRange(data,0,bytesRead)).strip();
+			return new String(Arrays.copyOfRange(data,0,bytesRead));
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to read request: %s", e.getMessage()));
 			return null;

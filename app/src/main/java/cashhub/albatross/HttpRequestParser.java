@@ -9,7 +9,8 @@ import java.util.HashMap;
 
 public class HttpRequestParser {
 	public static HttpRequest parseRequest(String requestString, Socket connection) throws MalformedHttpRequestException {
-		var requestLines = requestString.split("\r\n");
+		// https://stackoverflow.com/questions/14602062/java-string-split-removed-empty-values
+		var requestLines = requestString.split("\r\n", -1); // Java, why???
 		var startLine = requestLines[0];
 
 		var requestVerb = parseVerb(startLine);
@@ -55,7 +56,7 @@ public class HttpRequestParser {
 	private static HashMap<String, String> parseQueryParameters(String paramsString) throws MalformedHttpRequestException {
 		var queryParameters = new HashMap<String, String>();
 
-		if (paramsString == null) {
+		if (paramsString == null || paramsString.isBlank()) {
 			return queryParameters;
 		}
 

@@ -62,7 +62,13 @@ public class CSVUserRepository implements IUserRepository {
 			while ((line = reader.readLine()) != null) {
 				var segments = line.split(",");
 				try {
-					memoryRepo.addUser(new User(UUID.fromString(segments[0]), segments[1], segments[2], segments[3], segments[4]));
+					memoryRepo.addUser(new User(UUID.fromString(segments[0]),
+						segments[1],
+						segments[2],
+						segments[3],
+						segments[4],
+						Double.parseDouble(segments[5])
+					));
 				} catch (IndexOutOfBoundsException | IllegalArgumentException e) {
 					logger.LogError("Malformed data in the save file!");
 				}
@@ -82,7 +88,14 @@ public class CSVUserRepository implements IUserRepository {
 			var writer = new FileWriter(savePath);
 
 			for (var user : memoryRepo.getUsers()) {
-				writer.write(String.format("%s,%s,%s,%s,%s\n", user.id(), user.firstName(), user.lastName(), user.email(), user.passwordHash()));
+				writer.write(String.format("%s,%s,%s,%s,%s,%s\n",
+					user.getId(),
+					user.getFirstName(),
+					user.getLastName(),
+					user.getEmail(),
+					user.getPasswordHash(),
+					user.getBalance()
+				));
 			}
 
 			writer.close();

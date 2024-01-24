@@ -42,7 +42,7 @@ public class UserService {
 					.build();
 		}
 
-		userRepo.addUser(new User(id, firstName, lastName, email, hashPassword(password)));
+		userRepo.addUser(new User(id, firstName, lastName, email, hashPassword(password), 0));
 		logger.LogInformation(String.format("User %s registered", id));
 		return HttpResponseBuilder.create().withStatusCode(HttpStatusCode.OK).build();
 	}
@@ -58,16 +58,16 @@ public class UserService {
 		var passwordHash = hashPassword(password);
 		var user = userRepo.getUserByEmail(email);
 
-		if (user == null || !user.passwordHash().equals(passwordHash)) {
+		if (user == null || !user.getPasswordHash().equals(passwordHash)) {
 			logger.LogWarning(String.format("Unsuccessful login attempt with credentials %s:%s", email, password));
 			return HttpResponseBuilder.redirectTo("/login.html");
 		}
 
-		logger.LogInformation(String.format("User %s logged in successfully!", user.id()));
+		logger.LogInformation(String.format("User %s logged in successfully!", user.getId()));
 		return HttpResponseBuilder.create()
 				.withStatusCode(HttpStatusCode.OK)
-				.withCookie("authtoken", authService.generateAuthToken(user.id()))
-				.withCookie("userid", user.id().toString())
+				.withCookie("authtoken", authService.generateAuthToken(user.getId()))
+				.withCookie("userid", user.getId().toString())
 				.addRedirect("/user/dashboard")
 				.build();
 	}
@@ -81,9 +81,9 @@ public class UserService {
 
 		var user = userRepo.getUserById(UUID.fromString(userId));
 		var params = new HashMap<String, String>();
-		params.put("full_name", user.firstName() + " " + user.lastName());
+		params.put("full_name", user.getFirstName() + " " + user.getLastName());
 		params.put("id", userId);
-		params.put("balance", "420.69");
+		params.put("balance", String.valueOf(user.getBalance()));
 
 		try {
 			return HttpResponseBuilder.fromTemplate("/user_dashboard.html", params);
@@ -91,6 +91,35 @@ public class UserService {
 			logger.LogError(String.format("Failed to read template user_dashboard.html: %s", e.getMessage()));
 			return HttpResponseBuilder.create().withStatusCode(HttpStatusCode.InternalServerError).build();
 		}
+	}
+
+	public HttpResponse logoutUser(HttpRequest request) {
+		return HttpResponseBuilder.create()
+				.withCookie("authtoken", "invalid")
+				.addRedirect("/")
+				.build();
+	}
+
+	public HttpResponse deposit(HttpRequest request) {
+		var authToken = request.cookies().get("authtoken");
+		var userId = request.cookies().get("userid");
+		if (authToken == null || userId == null || !authService.validateAuthToken(authToken, UUID.fromString(userId))) {
+			return HttpResponseBuilder.redirectTo("/");
+		}
+
+		var user = userRepo.getUserById(UUID.fromString(userId));
+		double amount;
+		try {
+			amount = Double.parseDouble(request.formData().get("amount"));
+		} catch (NullPointerException | NumberFormatException e) {
+			return HttpResponseBuilder.create()
+				.withStatusCode(HttpStatusCode.BadRequest)
+				.withContent("Amount not specified!")
+				.build();
+		}
+
+		user.setBalance(user.getBalance() + amount);
+		return HttpResponseBuilder.redirectTo("/user/dashboard");
 	}
 
 	private String hashPassword(String password) {

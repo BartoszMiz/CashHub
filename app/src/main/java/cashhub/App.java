@@ -24,6 +24,8 @@ public class App {
 		router.addRoute(HttpVerb.POST, "/user/register", userService::registerUser);
 		router.addRoute(HttpVerb.POST, "/user/login", userService::loginUser);
 		router.addRoute(HttpVerb.GET, "/user/dashboard", userService::userDashboard);
+		router.addRoute(HttpVerb.POST, "/user/logout", userService::logoutUser);
+		router.addRoute(HttpVerb.POST, "/user/deposit", userService::deposit);
 
 		/*
 		 API routes:

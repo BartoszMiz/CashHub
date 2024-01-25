@@ -30,16 +30,16 @@ public class UserService {
 
 		if (firstName == null || lastName == null || email == null || password == null) {
 			return HttpResponseBuilder.create()
-					.withStatusCode(HttpStatusCode.BadRequest)
-					.withContent("firstname, lastname, email or password was not supplied!")
-					.build();
+				.withStatusCode(HttpStatusCode.BadRequest)
+				.withContent("firstname, lastname, email or password was not supplied!")
+				.build();
 		}
 
 		if (userRepo.getUserByEmail(email) != null) {
 			return HttpResponseBuilder.create()
-					.withStatusCode(HttpStatusCode.Unauthorized)
-					.withContent("A user with the supplied email is already registered!")
-					.build();
+				.withStatusCode(HttpStatusCode.Unauthorized)
+				.withContent("A user with the supplied email is already registered!")
+				.build();
 		}
 
 		userRepo.addUser(new User(id, firstName, lastName, email, hashPassword(password), 0));
@@ -65,24 +65,22 @@ public class UserService {
 
 		logger.LogInformation(String.format("User %s logged in successfully!", user.id()));
 		return HttpResponseBuilder.create()
-				.withStatusCode(HttpStatusCode.OK)
-				.withCookie("authtoken", authService.generateAuthToken(user.id()))
-				.withCookie("userid", user.id().toString())
-				.addRedirect("/user/dashboard")
-				.build();
+			.withStatusCode(HttpStatusCode.OK)
+			.withCookie("authtoken", authService.generateAuthToken(user.id()))
+			.withCookie("userid", user.id().toString())
+			.addRedirect("/user/dashboard")
+			.build();
 	}
 
 	public HttpResponse userDashboard(HttpRequest request) {
-		var authToken = request.cookies().get("authtoken");
-		var userId = request.cookies().get("userid");
-		if (authToken == null || userId == null || !authService.validateAuthToken(authToken, UUID.fromString(userId))) {
+		var user = getAuthenticatedUser(request);
+		if (user == null) {
 			return HttpResponseBuilder.redirectTo("/");
 		}
 
-		var user = userRepo.getUserById(UUID.fromString(userId));
 		var params = new HashMap<String, String>();
 		params.put("full_name", user.firstName() + " " + user.lastName());
-		params.put("id", userId);
+		params.put("id", user.id().toString());
 		params.put("balance", String.valueOf(user.balance()));
 
 		try {
@@ -95,22 +93,20 @@ public class UserService {
 
 	public HttpResponse logoutUser(HttpRequest request) {
 		return HttpResponseBuilder.create()
-				.withCookie("authtoken", "invalid")
-				.addRedirect("/")
-				.build();
+			.withCookie("authtoken", "invalid")
+			.addRedirect("/")
+			.build();
 	}
 
 	public HttpResponse deposit(HttpRequest request) {
-		var authToken = request.cookies().get("authtoken");
-		var userId = request.cookies().get("userid");
-		if (authToken == null || userId == null || !authService.validateAuthToken(authToken, UUID.fromString(userId))) {
+		var user = getAuthenticatedUser(request);
+		if (user == null) {
 			return HttpResponseBuilder.redirectTo("/");
 		}
 
-		var user = userRepo.getUserById(UUID.fromString(userId));
-		double amount;
+		double depositAmount;
 		try {
-			amount = Double.parseDouble(request.formData().get("amount"));
+			depositAmount = Double.parseDouble(request.formData().get("amount"));
 		} catch (NullPointerException | NumberFormatException e) {
 			return HttpResponseBuilder.create()
 				.withStatusCode(HttpStatusCode.BadRequest)
@@ -118,16 +114,18 @@ public class UserService {
 				.build();
 		}
 
-		userRepo.updateUser(new User(user.id(),
+		userRepo.updateUser(new User(
+			user.id(),
 			user.firstName(),
 			user.lastName(),
 			user.email(),
 			user.passwordHash(),
-			user.balance() + amount)
+			user.balance() + depositAmount)
 		);
 		return HttpResponseBuilder.redirectTo("/user/dashboard");
 	}
 
+	// TODO: Move to another class
 	private String hashPassword(String password) {
 		MessageDigest messageDigest;
 		try {
@@ -138,5 +136,24 @@ public class UserService {
 
 		var hashBytes = messageDigest.digest(password.getBytes());
 		return new String(Base64.getEncoder().encode(hashBytes));
+	}
+
+	// TODO: Move to another class
+	private User getAuthenticatedUser(HttpRequest request) {
+		var authToken = request.cookies().get("authtoken");
+
+		UUID userId;
+		try {
+			userId = UUID.fromString(request.cookies().get("userid"));
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
+
+		var isUserAuthenticated = authToken != null && authService.validateAuthToken(authToken, userId);
+		if (isUserAuthenticated) {
+			return userRepo.getUserById(userId);
+		}
+
+		return null;
 	}
 }

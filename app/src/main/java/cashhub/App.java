@@ -18,7 +18,7 @@ public class App {
 
 		var router = new Router(logger);
 		router.addRoute(HttpVerb.GET, "/", request ->
-				HttpResponseBuilder.redirectTo("/index.html")
+			HttpResponseBuilder.redirectTo("/index.html")
 		);
 
 		router.addRoute(HttpVerb.POST, "/user/register", userService::registerUser);

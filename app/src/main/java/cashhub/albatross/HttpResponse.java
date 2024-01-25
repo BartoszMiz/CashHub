@@ -12,7 +12,7 @@ public record HttpResponse(HttpStatusCode statusCode, Map<String, String> header
 		}
 
 		for (var cookieName : cookies.keySet()) {
-			sb.append(String.format("Set-Cookie: %s=%s\r\n", cookieName, cookies.get(cookieName)));
+			sb.append(String.format("Set-Cookie: %s=%s; Path=/\r\n", cookieName, cookies.get(cookieName)));
 		}
 
 		int contentLength = 0;

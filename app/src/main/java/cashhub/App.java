@@ -15,14 +15,26 @@ public class App {
 
 		var transactionRepo = new InMemoryTransactionRepository();
 
-		var authService = new AuthService();
+		var authService = new AuthService(userRepo);
 		var userService = new UserService(userRepo, authService, logger);
 		var transactionService = new TransactionService(transactionRepo, userRepo, logger);
 
 		var router = new Router(logger);
-		router.addRoute(HttpVerb.GET, "/", request ->
-			HttpResponseBuilder.redirectTo("/index.html")
-		);
+		router.addRoute(HttpVerb.GET, "/", request -> {
+			if (authService.getAuthenticatedUser(request) != null) {
+				return HttpResponseBuilder.redirectTo("/user/dashboard");
+			}
+
+			return HttpResponseBuilder.redirectTo("/index.html");
+		});
+
+		router.addRoute(HttpVerb.GET, "/login", request -> {
+			if (authService.getAuthenticatedUser(request) != null) {
+				return HttpResponseBuilder.redirectTo("/user/dashboard");
+			}
+
+			return HttpResponseBuilder.redirectTo("/login.html");
+		});
 
 		router.addRoute(HttpVerb.POST, "/user/register", userService::registerUser);
 		router.addRoute(HttpVerb.POST, "/user/login", userService::loginUser);

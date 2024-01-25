@@ -17,7 +17,7 @@
         </ul>
         <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="info.html">Info</a></li>
+            <li><a href="/info.html">Info</a></li>
             <li><a href="/privacy.html">Privacy Policy</a></li>
             <li>
                 <form style="display: inline" method="post" action="/user/logout">
@@ -33,7 +33,7 @@
 
     <form method="post" action="/user/deposit">
         <label for="amount">Deposited amount
-            <input type="number" placeholder="0.00" name="amount" id="amount">
+            <input type="number" placeholder="0.00" name="amount" id="amount" required>
         </label>
         <button type="submit">Deposit</button>
     </form>

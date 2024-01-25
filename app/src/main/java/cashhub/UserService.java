@@ -73,7 +73,7 @@ public class UserService {
 	}
 
 	public HttpResponse userDashboard(HttpRequest request) {
-		var user = getAuthenticatedUser(request);
+		var user = authService.getAuthenticatedUser(request);
 		if (user == null) {
 			return HttpResponseBuilder.redirectTo("/");
 		}
@@ -99,7 +99,7 @@ public class UserService {
 	}
 
 	public HttpResponse deposit(HttpRequest request) {
-		var user = getAuthenticatedUser(request);
+		var user = authService.getAuthenticatedUser(request);
 		if (user == null) {
 			return HttpResponseBuilder.redirectTo("/");
 		}
@@ -136,24 +136,5 @@ public class UserService {
 
 		var hashBytes = messageDigest.digest(password.getBytes());
 		return new String(Base64.getEncoder().encode(hashBytes));
-	}
-
-	// TODO: Move to another class
-	private User getAuthenticatedUser(HttpRequest request) {
-		var authToken = request.cookies().get("authtoken");
-
-		UUID userId;
-		try {
-			userId = UUID.fromString(request.cookies().get("userid"));
-		} catch (IllegalArgumentException e) {
-			return null;
-		}
-
-		var isUserAuthenticated = authToken != null && authService.validateAuthToken(authToken, userId);
-		if (isUserAuthenticated) {
-			return userRepo.getUserById(userId);
-		}
-
-		return null;
 	}
 }

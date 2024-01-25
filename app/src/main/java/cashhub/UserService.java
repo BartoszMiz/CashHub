@@ -58,16 +58,16 @@ public class UserService {
 		var passwordHash = hashPassword(password);
 		var user = userRepo.getUserByEmail(email);
 
-		if (user == null || !user.getPasswordHash().equals(passwordHash)) {
+		if (user == null || !user.passwordHash().equals(passwordHash)) {
 			logger.LogWarning(String.format("Unsuccessful login attempt with credentials %s:%s", email, password));
 			return HttpResponseBuilder.redirectTo("/login.html");
 		}
 
-		logger.LogInformation(String.format("User %s logged in successfully!", user.getId()));
+		logger.LogInformation(String.format("User %s logged in successfully!", user.id()));
 		return HttpResponseBuilder.create()
 				.withStatusCode(HttpStatusCode.OK)
-				.withCookie("authtoken", authService.generateAuthToken(user.getId()))
-				.withCookie("userid", user.getId().toString())
+				.withCookie("authtoken", authService.generateAuthToken(user.id()))
+				.withCookie("userid", user.id().toString())
 				.addRedirect("/user/dashboard")
 				.build();
 	}
@@ -81,9 +81,9 @@ public class UserService {
 
 		var user = userRepo.getUserById(UUID.fromString(userId));
 		var params = new HashMap<String, String>();
-		params.put("full_name", user.getFirstName() + " " + user.getLastName());
+		params.put("full_name", user.firstName() + " " + user.lastName());
 		params.put("id", userId);
-		params.put("balance", String.valueOf(user.getBalance()));
+		params.put("balance", String.valueOf(user.balance()));
 
 		try {
 			return HttpResponseBuilder.fromTemplate("/user_dashboard.html", params);
@@ -118,7 +118,13 @@ public class UserService {
 				.build();
 		}
 
-		user.setBalance(user.getBalance() + amount);
+		userRepo.updateUser(new User(user.id(),
+			user.firstName(),
+			user.lastName(),
+			user.email(),
+			user.passwordHash(),
+			user.balance() + amount)
+		);
 		return HttpResponseBuilder.redirectTo("/user/dashboard");
 	}
 

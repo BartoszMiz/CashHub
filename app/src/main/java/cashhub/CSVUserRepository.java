@@ -89,12 +89,12 @@ public class CSVUserRepository implements IUserRepository {
 
 			for (var user : memoryRepo.getUsers()) {
 				writer.write(String.format("%s,%s,%s,%s,%s,%s\n",
-					user.getId(),
-					user.getFirstName(),
-					user.getLastName(),
-					user.getEmail(),
-					user.getPasswordHash(),
-					user.getBalance()
+					user.id(),
+					user.firstName(),
+					user.lastName(),
+					user.email(),
+					user.passwordHash(),
+					user.balance()
 				));
 			}
 

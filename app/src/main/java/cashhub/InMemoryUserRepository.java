@@ -14,7 +14,7 @@ public class InMemoryUserRepository implements IUserRepository {
 	@Override
 	public User getUserById(UUID id) {
 		for (var user : users) {
-			if (user.getId().equals(id)) {
+			if (user.id().equals(id)) {
 				return user;
 			}
 		}
@@ -24,7 +24,7 @@ public class InMemoryUserRepository implements IUserRepository {
 	@Override
 	public User getUserByEmail(String email) {
 		for (var user : users) {
-			if (user.getEmail().equals(email)) {
+			if (user.email().equals(email)) {
 				return user;
 			}
 		}
@@ -37,7 +37,7 @@ public class InMemoryUserRepository implements IUserRepository {
 
 	@Override
 	public void addUser(User user) {
-		if (getUserById(user.getId()) != null) {
+		if (getUserById(user.id()) != null) {
 			return;
 		}
 		users.add(user);
@@ -45,7 +45,7 @@ public class InMemoryUserRepository implements IUserRepository {
 
 	@Override
 	public void updateUser(User user) {
-		var oldUser = getUserById(user.getId());
+		var oldUser = getUserById(user.id());
 		if (oldUser == null) {
 			return;
 		}

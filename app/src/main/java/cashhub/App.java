@@ -13,8 +13,11 @@ public class App {
 		var userRepo = new CSVUserRepository("users.csv", logger);
 		userRepo.loadData();
 
+		var transactionRepo = new InMemoryTransactionRepository();
+
 		var authService = new AuthService();
 		var userService = new UserService(userRepo, authService, logger);
+		var transactionService = new TransactionService(transactionRepo, userRepo, logger);
 
 		var router = new Router(logger);
 		router.addRoute(HttpVerb.GET, "/", request ->
@@ -26,6 +29,8 @@ public class App {
 		router.addRoute(HttpVerb.GET, "/user/dashboard", userService::userDashboard);
 		router.addRoute(HttpVerb.POST, "/user/logout", userService::logoutUser);
 		router.addRoute(HttpVerb.POST, "/user/deposit", userService::deposit);
+
+		router.addRoute(HttpVerb.POST, "/transaction/execute", transactionService::executeTransaction);
 
 		/*
 		 API routes:

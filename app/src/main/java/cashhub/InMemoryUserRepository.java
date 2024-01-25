@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class InMemoryUserRepository implements IUserRepository {
-	private final ArrayList<User> users;
+	private final List<User> users;
 
 	public InMemoryUserRepository() {
 		users = new ArrayList<>();

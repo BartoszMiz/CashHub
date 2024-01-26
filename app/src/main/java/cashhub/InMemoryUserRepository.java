@@ -55,6 +55,18 @@ public class InMemoryUserRepository implements IUserRepository {
 	}
 
 	@Override
+	public void updateUserBalance(User user, double newBalance) {
+		updateUser(new User(
+			user.id(),
+			user.firstName(),
+			user.lastName(),
+			user.email(),
+			user.passwordHash(),
+			newBalance
+		));
+	}
+
+	@Override
 	public void deleteUser(UUID id) {
 		var user = getUserById(id);
 		users.remove(user);

@@ -9,5 +9,6 @@ public interface IUserRepository {
 	List<User> getUsers();
 	void addUser(User user);
 	void updateUser(User user);
+	void updateUserBalance(User user, double newBalance);
 	void deleteUser(UUID id);
 }

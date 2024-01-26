@@ -2,6 +2,8 @@ package cashhub;
 
 import cashhub.albatross.HttpRequest;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.UUID;
@@ -47,6 +49,18 @@ public class AuthService {
 		}
 
 		return null;
+	}
+
+	public String hashPassword(String password) {
+		MessageDigest messageDigest;
+		try {
+			messageDigest = MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException ignored) {
+			return "UNREACHABLE";
+		}
+
+		var hashBytes = messageDigest.digest(password.getBytes());
+		return new String(Base64.getEncoder().encode(hashBytes));
 	}
 
 	// XOR == encryption LOL

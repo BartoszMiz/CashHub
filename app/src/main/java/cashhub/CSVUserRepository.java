@@ -48,6 +48,12 @@ public class CSVUserRepository implements IUserRepository {
 	}
 
 	@Override
+	public void updateUserBalance(User user, double newBalance) {
+		memoryRepo.updateUserBalance(user, newBalance);
+		saveData();
+	}
+
+	@Override
 	public void deleteUser(UUID id) {
 		memoryRepo.deleteUser(id);
 		saveData();

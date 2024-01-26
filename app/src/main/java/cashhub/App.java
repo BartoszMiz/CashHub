@@ -10,14 +10,15 @@ public class App {
 	public static void main(String[] args) {
 		var logger = new ConsoleLogger(LogLevel.Debug);
 
-		var userRepo = new CSVUserRepository("users.csv", logger);
-		userRepo.loadData();
+		var userRepository = new CSVUserRepository("users.csv", logger);
+		userRepository.loadData();
 
-		var transactionRepo = new InMemoryTransactionRepository();
+		var transactionRepository = new InMemoryTransactionRepository();
 
-		var authService = new AuthService(userRepo);
-		var userService = new UserService(userRepo, authService, logger);
-		var transactionService = new TransactionService(transactionRepo, userRepo, logger);
+		var authService = new AuthService(userRepository);
+		var transactionService = new TransactionService(transactionRepository, userRepository);
+
+		var userService = new UserService(userRepository, authService, transactionRepository, transactionService, logger);
 
 		var router = new Router(logger);
 		router.addRoute(HttpVerb.GET, "/", request -> {
@@ -42,7 +43,7 @@ public class App {
 		router.addRoute(HttpVerb.POST, "/user/logout", userService::logoutUser);
 		router.addRoute(HttpVerb.POST, "/user/deposit", userService::deposit);
 
-		router.addRoute(HttpVerb.POST, "/transaction/execute", transactionService::executeTransaction);
+		router.addRoute(HttpVerb.POST, "/transaction/execute", userService::executeTransaction);
 
 		/*
 		 API routes:

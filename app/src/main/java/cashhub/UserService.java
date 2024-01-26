@@ -6,18 +6,24 @@ import cashhub.logging.ILogger;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class UserService {
 	private final IUserRepository userRepo;
 	private final AuthService authService;
+	private final ITransactionRepository transactionRepository;
+	private final TransactionService transactionService;
 	private final ILogger logger;
 
-	public UserService(IUserRepository userRepo, AuthService authService, ILogger logger) {
+	public UserService(IUserRepository userRepo, AuthService authService, ITransactionRepository transactionRepository, TransactionService transactionService, ILogger logger) {
 		this.userRepo = userRepo;
 		this.authService = authService;
+		this.transactionRepository = transactionRepository;
+		this.transactionService = transactionService;
 		this.logger = logger;
 	}
 
@@ -42,7 +48,7 @@ public class UserService {
 				.build();
 		}
 
-		userRepo.addUser(new User(id, firstName, lastName, email, hashPassword(password), 0));
+		userRepo.addUser(new User(id, firstName, lastName, email, authService.hashPassword(password), 0));
 		logger.LogInformation(String.format("User %s registered", id));
 		return HttpResponseBuilder.create().withStatusCode(HttpStatusCode.OK).build();
 	}
@@ -55,7 +61,7 @@ public class UserService {
 			return HttpResponseBuilder.redirectTo("/login.html");
 		}
 
-		var passwordHash = hashPassword(password);
+		var passwordHash = authService.hashPassword(password);
 		var user = userRepo.getUserByEmail(email);
 
 		if (user == null || !user.passwordHash().equals(passwordHash)) {
@@ -83,6 +89,9 @@ public class UserService {
 		params.put("id", user.id().toString());
 		params.put("balance", String.valueOf(user.balance()));
 
+		var userTransactions = transactionRepository.getTransactionInvolvingUser(user.id());
+		params.put("transactions", generateTransactionsHtml(userTransactions, user.id()));
+
 		try {
 			return HttpResponseBuilder.fromTemplate("/user_dashboard.html", params);
 		} catch (IOException e) {
@@ -94,6 +103,7 @@ public class UserService {
 	public HttpResponse logoutUser(HttpRequest request) {
 		return HttpResponseBuilder.create()
 			.withCookie("authtoken", "invalid")
+			.withCookie("userid", "invalid")
 			.addRedirect("/")
 			.build();
 	}
@@ -114,27 +124,57 @@ public class UserService {
 				.build();
 		}
 
-		userRepo.updateUser(new User(
-			user.id(),
-			user.firstName(),
-			user.lastName(),
-			user.email(),
-			user.passwordHash(),
-			user.balance() + depositAmount)
-		);
+		userRepo.updateUserBalance(user, user.balance() + depositAmount);
 		return HttpResponseBuilder.redirectTo("/user/dashboard");
 	}
 
-	// TODO: Move to another class
-	private String hashPassword(String password) {
-		MessageDigest messageDigest;
-		try {
-			messageDigest = MessageDigest.getInstance("SHA-256");
-		} catch (NoSuchAlgorithmException ignored) {
-			return "UNREACHABLE";
+	public HttpResponse executeTransaction(HttpRequest request) {
+		var sender = authService.getAuthenticatedUser(request);
+		if (sender == null) {
+			return HttpResponseBuilder.redirectTo("/");
 		}
 
-		var hashBytes = messageDigest.digest(password.getBytes());
-		return new String(Base64.getEncoder().encode(hashBytes));
+		UUID recipientId;
+		double amount;
+		try {
+			recipientId = UUID.fromString(request.formData().get("recipientId"));
+			amount = Double.parseDouble(request.formData().get("amount"));
+		} catch (IllegalArgumentException | NullPointerException e) {
+			return HttpResponseBuilder.create()
+					.withStatusCode(HttpStatusCode.BadRequest)
+					.withContent("Recipient ID or amount not specified!")
+					.build();
+		}
+
+		var currentTime = LocalDateTime.now();
+		transactionService.executeTransaction(new Transaction(
+			UUID.randomUUID(),
+			sender.id(),
+			recipientId,
+			amount,
+			currentTime)
+		);
+
+		return HttpResponseBuilder.redirectTo("/user/dashboard");
+	}
+
+	private String generateTransactionsHtml(List<Transaction> transactions, UUID userId) {
+		var sb = new StringBuilder();
+		for (var transaction : transactions) {
+			sb.append("<tr>");
+			sb.append(String.format("<td>%s</td>", transaction.id()));
+			sb.append(String.format("<td>%s</td>", transaction.executionTime()));
+
+			var isTransactionOutbound = transaction.senderId().equals(userId);
+			if (isTransactionOutbound) {
+				sb.append(String.format("<td style=\"color:red\">-&dollar;%s</td>", transaction.amount()));
+			} else {
+				sb.append(String.format("<td style=\"color:green\">+&dollar;%s</td>", transaction.amount()));
+			}
+
+			sb.append("</tr>");
+		}
+
+		return sb.toString();
 	}
 }

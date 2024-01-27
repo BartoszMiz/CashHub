@@ -15,9 +15,9 @@ public class CSVUserRepository implements IUserRepository {
 	private final ILogger logger;
 
 	public CSVUserRepository(String savePath, ILogger logger) {
-		memoryRepo = new InMemoryUserRepository();
 		this.savePath = savePath;
 		this.logger = logger;
+		memoryRepo = new InMemoryUserRepository();
 	}
 
 	@Override
@@ -76,17 +76,16 @@ public class CSVUserRepository implements IUserRepository {
 						Double.parseDouble(segments[5])
 					));
 				} catch (IndexOutOfBoundsException | IllegalArgumentException e) {
-					logger.LogError("Malformed data in the save file!");
+					logger.LogError(String.format("Malformed data in %s", savePath));
 				}
 			}
 
 			reader.close();
 		} catch (IOException e) {
-			logger.LogError(String.format("Failed to read from save file: %s", e.getMessage()));
-
+			logger.LogError(String.format("Failed to load users from %s: %s", savePath, e.getMessage()));
 		}
 
-		logger.LogInformation(String.format("Data loaded from %s", savePath));
+		logger.LogInformation(String.format("Users loaded from %s", savePath));
 	}
 
 	public void saveData() {
@@ -106,9 +105,9 @@ public class CSVUserRepository implements IUserRepository {
 
 			writer.close();
 		} catch (IOException e) {
-			logger.LogError(String.format("Failed to write to save file: %s", e.getMessage()));
+			logger.LogError(String.format("Failed to save users to %s: %s", savePath, e.getMessage()));
 		}
 
-		logger.LogInformation(String.format("Data saved to %s", savePath));
+		logger.LogInformation(String.format("Users saved to %s", savePath));
 	}
 }

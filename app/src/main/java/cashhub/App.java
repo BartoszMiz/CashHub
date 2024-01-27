@@ -13,7 +13,8 @@ public class App {
 		var userRepository = new CSVUserRepository("users.csv", logger);
 		userRepository.loadData();
 
-		var transactionRepository = new InMemoryTransactionRepository();
+		var transactionRepository = new CSVTransactionRepository("transactions.csv", logger);
+		transactionRepository.loadData();
 
 		var authService = new AuthService(userRepository);
 		var transactionService = new TransactionService(transactionRepository, userRepository);

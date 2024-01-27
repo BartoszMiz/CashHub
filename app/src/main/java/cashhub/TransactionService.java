@@ -1,11 +1,5 @@
 package cashhub;
 
-import cashhub.albatross.HttpRequest;
-import cashhub.albatross.HttpResponse;
-import cashhub.albatross.HttpResponseBuilder;
-import cashhub.albatross.HttpStatusCode;
-import cashhub.logging.ILogger;
-
 public class TransactionService {
 	private final ITransactionRepository transactionRepository;
 	private final IUserRepository userRepository;
@@ -24,6 +18,10 @@ public class TransactionService {
 		var recipient = userRepository.getUserById(transaction.recipientId());
 
 		if (sender == null || recipient == null) {
+			return false;
+		}
+
+		if (transaction.amount() <= 0) {
 			return false;
 		}
 

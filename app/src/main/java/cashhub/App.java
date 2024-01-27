@@ -17,7 +17,7 @@ public class App {
 		transactionRepository.loadData();
 
 		var authService = new AuthService(userRepository);
-		var transactionService = new TransactionService(transactionRepository, userRepository);
+		var transactionService = new TransactionService(transactionRepository, userRepository, logger);
 
 		var userService = new UserService(userRepository, authService, transactionRepository, transactionService, logger);
 
@@ -43,17 +43,7 @@ public class App {
 		router.addRoute(HttpVerb.GET, "/user/dashboard", userService::userDashboard);
 		router.addRoute(HttpVerb.POST, "/user/logout", userService::logoutUser);
 		router.addRoute(HttpVerb.POST, "/user/deposit", userService::deposit);
-
 		router.addRoute(HttpVerb.POST, "/transaction/execute", userService::executeTransaction);
-
-		/*
-		 API routes:
-		 user/register
-		 user/login
-		 transfer/schedule
-		*/
-		// A few routes with templates for the web UI
-
 
 		var httpServer = new HttpServer(PORT, router, logger);
 		if (!httpServer.bind()) {

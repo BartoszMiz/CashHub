@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+// TODO: Refactor this into a proper UserService and UserDashboardController
 public class UserService {
 	private final IUserRepository userRepo;
 	private final AuthService authService;
@@ -49,6 +50,7 @@ public class UserService {
 		return HttpResponseBuilder.create().withStatusCode(HttpStatusCode.OK).build();
 	}
 
+	// TODO: Add feedback for the user (wrong credentials)
 	public HttpResponse loginUser(HttpRequest request) {
 		var email = request.formData().get("email");
 		var password = request.formData().get("password");
@@ -104,6 +106,8 @@ public class UserService {
 			.build();
 	}
 
+	// TODO: Add feedback for the user (invalid amount)
+	// TODO: Show deposits as transactions ???
 	public HttpResponse deposit(HttpRequest request) {
 		var user = authService.getAuthenticatedUser(request);
 		if (user == null) {
@@ -124,6 +128,7 @@ public class UserService {
 		return HttpResponseBuilder.redirectTo("/user/dashboard");
 	}
 
+	// TODO: Add feedback for the user (invalid recipient, invalid amount, insufficient funds, etc.)
 	public HttpResponse executeTransaction(HttpRequest request) {
 		var sender = authService.getAuthenticatedUser(request);
 		if (sender == null) {

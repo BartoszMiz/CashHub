@@ -4,13 +4,9 @@ import cashhub.albatross.*;
 import cashhub.logging.ILogger;
 
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 public class UserService {
 	private final IUserRepository userRepo;
@@ -87,7 +83,7 @@ public class UserService {
 		var params = new HashMap<String, String>();
 		params.put("full_name", user.firstName() + " " + user.lastName());
 		params.put("id", user.id().toString());
-		params.put("balance", String.valueOf(user.balance()));
+		params.put("balance", String.format("%.2f", user.balance()));
 
 		var userTransactions = transactionRepository.getTransactionInvolvingUser(user.id());
 		params.put("transactions", generateTransactionsHtml(userTransactions, user.id()));
@@ -163,13 +159,13 @@ public class UserService {
 		for (var transaction : transactions) {
 			sb.append("<tr>");
 			sb.append(String.format("<td>%s</td>", transaction.id()));
-			sb.append(String.format("<td>%s</td>", transaction.executionTime()));
+			sb.append(String.format("<td>%s</td>", transaction.executionTime().format(DateTimeFormatter.ofPattern("y-MM-dd hh:mm"))));
 
 			var isTransactionOutbound = transaction.senderId().equals(userId);
 			if (isTransactionOutbound) {
-				sb.append(String.format("<td style=\"color:red\">-&dollar;%s</td>", transaction.amount()));
+				sb.append(String.format("<td style=\"color:red\">-&dollar;%.2f</td>", transaction.amount()));
 			} else {
-				sb.append(String.format("<td style=\"color:green\">+&dollar;%s</td>", transaction.amount()));
+				sb.append(String.format("<td style=\"color:green\">+&dollar;%.2f</td>", transaction.amount()));
 			}
 
 			sb.append("</tr>");

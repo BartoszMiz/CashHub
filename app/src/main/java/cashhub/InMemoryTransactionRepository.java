@@ -1,9 +1,6 @@
 package cashhub;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class InMemoryTransactionRepository implements ITransactionRepository {
 	private final List<Transaction> transactions;
@@ -21,6 +18,7 @@ public class InMemoryTransactionRepository implements ITransactionRepository {
 	public List<Transaction> getTransactionInvolvingUser(UUID userId) {
 		return transactions.stream()
 			.filter(transaction -> transaction.senderId().equals(userId) || transaction.recipientId().equals(userId))
+			.sorted(Comparator.comparing(Transaction::executionTime).reversed())
 			.toList();
 	}
 

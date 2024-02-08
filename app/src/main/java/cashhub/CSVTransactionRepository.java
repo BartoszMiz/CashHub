@@ -55,6 +55,7 @@ public class CSVTransactionRepository implements ITransactionRepository {
 			writer.close();
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to save transactions to %s: %s", savePath, e.getMessage()));
+			return;
 		}
 
 		logger.LogInformation(String.format("Transactions saved to %s", savePath));
@@ -84,6 +85,7 @@ public class CSVTransactionRepository implements ITransactionRepository {
 			reader.close();
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to load transactions from %s: %s", savePath, e.getMessage()));
+			return;
 		}
 
 		logger.LogInformation(String.format("Transaction data loaded from: %s", savePath));

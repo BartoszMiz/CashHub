@@ -83,6 +83,7 @@ public class CSVUserRepository implements IUserRepository {
 			reader.close();
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to load users from %s: %s", savePath, e.getMessage()));
+			return;
 		}
 
 		logger.LogInformation(String.format("Users loaded from %s", savePath));
@@ -106,6 +107,7 @@ public class CSVUserRepository implements IUserRepository {
 			writer.close();
 		} catch (IOException e) {
 			logger.LogError(String.format("Failed to save users to %s: %s", savePath, e.getMessage()));
+			return;
 		}
 
 		logger.LogInformation(String.format("Users saved to %s", savePath));

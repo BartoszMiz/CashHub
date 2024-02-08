@@ -8,7 +8,7 @@ public class App {
 	private static final int PORT = 8080;
 
 	public static void main(String[] args) {
-		var logger = new ConsoleLogger(LogLevel.Debug);
+		var logger = new ConsoleLogger(LogLevel.Information);
 
 		var userRepository = new CSVUserRepository("users.csv", logger);
 		userRepository.loadData();

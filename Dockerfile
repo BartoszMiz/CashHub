@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install -y make && rm -rf /var/lib/apt/lists/*
 RUN make jar 
 
-FROM openjdk:23-slim as run
+FROM openjdk:23-slim AS run
 
 WORKDIR /app
 COPY --from=build /build/cashhub.jar .
